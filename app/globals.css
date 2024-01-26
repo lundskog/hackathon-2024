@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 @import url("./styles/dmsans.css");
-@import url("./styles/inter.css");
+@import url("./styles/poppins.css");
 
 *,
 html,
 body {
-  font-family: "Inter";
+  font-family: "DM Sans";
 }
 
 ::-moz-selection {
@@ -24,7 +24,7 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 137 71% 98%;
     --foreground: 20 14.3% 4.1%;
 
     --card: 0 0% 100%;
@@ -33,7 +33,7 @@ body {
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
 
-    --primary: 24 9.8% 10%;
+    --primary: 137 71% 46%;
     --primary-foreground: 60 9.1% 97.8%;
 
     --secondary: 60 4.8% 95.9%;
@@ -56,7 +56,7 @@ body {
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
+    --background: 137 71% 4%;
     --foreground: 60 9.1% 97.8%;
 
     --card: 20 14.3% 4.1%;
@@ -65,7 +65,7 @@ body {
     --popover: 20 14.3% 4.1%;
     --popover-foreground: 60 9.1% 97.8%;
 
-    --primary: 60 9.1% 97.8%;
+    --primary: 137 71% 46%;
     --primary-foreground: 24 9.8% 10%;
 
     --secondary: 12 6.5% 15.1%;

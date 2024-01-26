@@ -1,8 +1,12 @@
 "use client";
+
+import { Button } from "@/components/ui/button";
+import { signOut } from "next-auth/react";
+
 export default function Home() {
   return (
     <div>
-      <h1 className="text-xl font-semibold">View</h1>
+      <Button className="font-semibold">Shush</Button>
     </div>
   );
 }
