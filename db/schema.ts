@@ -14,9 +14,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { nullable, z } from "zod";
 import { sql } from "drizzle-orm";
 
-export const listTypeEnum = pgEnum("list_type", ["tiers", "individual"]);
-
-export const listDiscoverabilityEnum = pgEnum("list_discoverability", [
+export const gameDiscoverabilityEnum = pgEnum("game_discoverability", [
   "public",
   "private",
 ]);
@@ -71,3 +69,21 @@ export const verificationTokens = pgTable(
     compoundKey: primaryKey(vt.identifier, vt.token),
   })
 );
+
+export const games = pgTable("game", {
+  id: text("id").notNull().primaryKey(),
+  name: text("name"),
+});
+
+export const decks = pgTable("deck", {
+  id: text("id").notNull().primaryKey(),
+  name: text("title"),
+  description: text("description"),
+});
+
+export const gameUser = pgTable("game_user", {
+  id: text("id").notNull().primaryKey(),
+  gameId: text("game_id"),
+  name: text("name"),
+  userId: text(""),
+});
