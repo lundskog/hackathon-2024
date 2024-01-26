@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import url("./styles/dmsans.css");
+@import url("./styles/inter.css");
 
 *,
 html,
