@@ -7,5 +7,5 @@ import {
 import { users } from "@/db/schema";
 
 export const gameRouter = createTRPCRouter({
-  create: publicProcedure.mutation(async ({ ctx }) => {}),
+  create: publicProcedure.input().mutation(async ({ ctx }) => {}),
 });

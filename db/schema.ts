@@ -85,4 +85,5 @@ export const gameUser = pgTable("game_user", {
   id: text("id").notNull().primaryKey(),
   gameId: text("game_id"),
   name: text("name"),
+  userId: text(""),
 });
