@@ -7,7 +7,6 @@ import { Providers } from "./providers";
 import NextAuthSessionProvider from "./providers/sessionProvider";
 import dynamic from "next/dynamic";
 import NextTopLoader from "nextjs-toploader";
-import Sidebar from "@/components/Sidebar";
 import ThemeSwitchButton from "@/components/ThemeSwitchButton";
 import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
@@ -29,7 +28,6 @@ export default function RootLayout({
           <Providers>
             <main className="flex min-h-screen">
               {/* <div className="relative max-w-[1080px] w-full flex grow py-4"> */}
-              <Sidebar />
               <div className="relative w-full flex grow p-4">{children}</div>
               <ThemeSwitchButton />
               <Toaster />
