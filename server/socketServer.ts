@@ -1,8 +1,8 @@
 import http, { Server as HTTPServer } from "http";
 import { Server as SocketIoServer, Socket } from "socket.io";
-import cors from "cors";
 
-let gameinfo = []
+// In-memory storage for chat msgs
+const chatHistory: { [roomId: string]: { msg: Array<{ user: string; msg: string }> } } = {};
 
 const httpServer: HTTPServer = http.createServer();
 
@@ -17,16 +17,31 @@ const io: SocketIoServer = new SocketIoServer(httpServer, {
 
 io.on("connection", (socket: Socket) => {
     console.log("A user connected:", socket.id);
+
     socket.on("join_room", (roomId: string) => {
         socket.join(roomId);
-        gameinfo.push({ roomId })
         console.log(`user with id-${socket.id} joined room - ${roomId}`);
+
+        console.log(chatHistory)
+        // Send chat history to the user who joined the room
+        if (chatHistory[roomId]) {
+            const msgs = chatHistory[roomId].msg;
+            socket.emit("chat_history", msgs);
+            console.log(msgs)
+        }
     });
 
-    socket.on("send_msg", (data: { roomId: string; message: string }) => {
+    socket.on("send_msg", (data: { roomId: string; user: string; msg: string }) => {
         console.log(data, "DATA");
-        // This will send a message to a specific room ID
-        socket.to(data.roomId).emit("receive_msg", data);
+
+        // Save the msg in the chat history
+        if (!chatHistory[data.roomId]) {
+            chatHistory[data.roomId] = { msg: [] };
+        }
+        chatHistory[data.roomId].msg.push({ ...data });
+
+        // Broadcast the msg to all users in the room
+        io.to(data.roomId).emit("receive_msg", data);
     });
 
     socket.on("disconnect", () => {
