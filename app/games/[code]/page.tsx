@@ -98,7 +98,16 @@ export default function GamePage() {
   if (!game) return;
 
   const handleStartGame = (socket: Socket) => {
-    socket.emit("start_game", gameCode, game.decks);
+    var cardArray: string[] = [];
+    const l = [
+      game.decks.map((deck) =>
+        deck.deck.cards
+          ?.filter((e) => e.type == "white")
+          .map((card) => cardArray.push(card.id))
+      ),
+    ];
+    console.log(cardArray);
+    socket.emit("start_game", gameCode, cardArray);
   };
 
   const handleJoin = async (nickname: string) => {
@@ -169,7 +178,9 @@ export default function GamePage() {
             roomId={gameCode}
             username={player.nickname}
           />
-          <Button className="m-4">Start game</Button>
+          <Button onClick={() => handleStartGame(socket)} className="m-4">
+            Start game
+          </Button>
         </div>
       </div>
     );
