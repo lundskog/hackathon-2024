@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import style from "./chat.module.css";
 import { Socket } from "socket.io-client";
 import { Input } from "../ui/input";
@@ -23,6 +23,17 @@ const ChatPage = ({
 }) => {
   const [currentMsg, setCurrentMsg] = useState("");
   const [chat, setChat] = useState<ChatMessage[]>([]);
+  const endOfChatRef = useRef<HTMLDivElement>(null);
+
+  const scrollToChatBottom = () => {
+    setTimeout(() => {
+      endOfChatRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
+  };
+
+  useEffect(() => {
+    scrollToChatBottom();
+  }, []);
 
   const sendData = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,6 +48,7 @@ const ChatPage = ({
           new Date(Date.now()).getMinutes(),
       };
       socket.emit("send_msg", msgData);
+      scrollToChatBottom();
       setCurrentMsg("");
     }
   };
@@ -44,6 +56,7 @@ const ChatPage = ({
   useEffect(() => {
     socket.on("receive_msg", (data: ChatMessage) => {
       setChat((pre) => [...pre, data]);
+      scrollToChatBottom();
       console.log(data);
     });
     socket.on("chat_history", (data: ChatMessage[]) => {
@@ -73,6 +86,7 @@ const ChatPage = ({
             </h3>
           </div>
         ))}
+        <div ref={endOfChatRef} />
       </div>
       <div>
         <form className="flex gap-1" onSubmit={(e) => sendData(e)}>
