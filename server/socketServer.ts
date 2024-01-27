@@ -1,5 +1,6 @@
 import http, { Server as HTTPServer } from "http";
 import { Server as SocketIoServer, Socket } from "socket.io";
+import { shuffle, chunkArray } from "@/lib/utils";
 
 type ChatMessage = {
     user: string;
@@ -13,10 +14,20 @@ type User = {
     socketUserId: string;
     points: number;
     connected: boolean;
+    whiteCardIds: string[];
+    playingWhiteCardId: string;
 };
+
+type Info = {
+    round: number;
+    activeBlackCard: string;
+    readerIndex: number;
+    playedWhiteCards: string[];
+}
 
 type Game = {
     users: Array<User>;
+    info: Info;
     msgs: Array<ChatMessage>;
 };
 
@@ -41,8 +52,18 @@ io.on("connection", (socket: Socket) => {
         console.log(`user with id-${socket.id} joined room - ${roomId}`);
         if (!games[roomId]) {
             console.log("--- Created room with id:", roomId);
-            games[roomId] = { users: [], msgs: [] };
+            games[roomId] = {
+                users: [],
+                msgs: [],
+                info: {
+                    round: 0,
+                    activeBlackCard: "",
+                    playedWhiteCards: [],
+                    readerIndex: 0
+                },
+            };
         }
+
         if (games[roomId].users.filter(x => x.playerId == playerId).length == 0) {
             games[roomId].users.push({
                 nickname,
@@ -50,6 +71,8 @@ io.on("connection", (socket: Socket) => {
                 socketUserId: socket.id,
                 points: 0,
                 connected: true,
+                whiteCardIds: [],
+                playingWhiteCardId: ""
             })
         }
         else {
@@ -88,6 +111,25 @@ io.on("connection", (socket: Socket) => {
             io.to(data.roomId).emit("receive_msg", msg);
         }
     );
+
+    socket.on("start_game", (data: { roomId: string, whiteCards: string[] }) => {
+        // shuffle deck
+        let whiteCards = shuffle(data.whiteCards)
+        let numberOfUsers = games[data.roomId].users.length
+
+        // split up deck according to players
+        const chunkedArray = chunkArray(whiteCards, numberOfUsers);
+        console.log(chunkArray)
+
+
+        io.to(data.roomId).emit("round_start", {});
+        // { 
+        //     playerId: whiteCardIds: string[]; 
+        // }
+        // add  remaining cards to unplayed
+
+        // console.log("A user disconnected:", socket.id);
+    });
 
     socket.on("disconnect", () => {
         console.log("A user disconnected:", socket.id);
