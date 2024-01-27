@@ -6,7 +6,7 @@ import { Droppable } from './Droppable';
 import Draggable from './Draggable';
 import BlackCard from './BlackCard';
 
-interface Card {
+export interface Card {
   id: string;
   text: string;
 }
@@ -16,6 +16,11 @@ export default function Board() {
   const [blackCards, setBlackCards] = useState<Card[]>([{ id: '1', text: 'Detta är ett svart kort där det kan stå _' }]);
   const [readingTime, setReadingTime] = useState<boolean>(false);
   const [isCardQueen, setIsCardQueen] = useState<boolean>(true);
+  const [currentShowCard, setCurrentShowCard] = useState<number>(0);
+  const [showCards, setShowCards] = useState<Card[]>([{ id: '1', text: 'Detta är ett vitt kort, här står det något roligt förhoppningsvis' },
+      { id: '2', text: 'Card 2' },
+      { id: '3', text: 'Card 3' }]);
+
   useEffect(() => {
       setCards([
       { id: '1', text: 'Detta är ett vitt kort, här står det något roligt förhoppningsvis' },
@@ -59,7 +64,7 @@ const handleDragEnd = (event: DragEndEvent) => {
         <div className='relative flex mt-5 px-10 space-x-4 mb-16'>
           <div className='relative px-10'>
             {blackCards.map((card, index) => (
-              <BlackCard key={card.id} id={card.id} text={card.text} zIndex={blackCards.length - index}/>
+              <BlackCard showCards={showCards} currentShowCard={currentShowCard} key={card.id} id={card.id} text={card.text} zIndex={blackCards.length - index}/>
             ))}
           <div className='w-[245px] h-[300px]'></div>
           </div>
@@ -72,7 +77,9 @@ const handleDragEnd = (event: DragEndEvent) => {
       </Droppable>
         {isCardQueen && readingTime &&
           <div className='w-screen flex justify-center'>
-            <button className='text-white text-xl font-bold bg-black rounded-2xl px-8 py-2 '>Show card 1</button>
+            {currentShowCard < showCards.length &&
+            <button onClick={() =>  setCurrentShowCard(currentShowCard+1)} className='text-white text-xl font-bold bg-black rounded-2xl px-8 py-2 '>Show card {currentShowCard+1}</button>
+            }
           </div>
         }
           <div style={{ opacity: readingTime || isCardQueen ? 0 : 1, bottom: readingTime || isCardQueen? 0:100, pointerEvents: readingTime || isCardQueen? "none":"all" }} className='flex transition-all mt-24 relative justify-center -space-x-28 mb-20'>
