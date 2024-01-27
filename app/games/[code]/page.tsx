@@ -48,9 +48,16 @@ export default function GamePage () {
   const createPlayerMutation = trpc.games.createPlayer.useMutation();
   const playerId = localStorage.getItem("playerId");
 
-  const { data: gameData } = trpc.games.get.useQuery({
-    gameCode: gameCode ?? "",
-  });
+  const { data: gameData, refetch: gameRefetch } = trpc.games.get.useQuery(
+    {
+      gameCode: gameCode ?? "",
+    },
+    {
+      refetchInterval: false,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   useEffect(() => {
     if (gameData) {
@@ -69,9 +76,10 @@ export default function GamePage () {
         )[0];
         if (creator) {
           socket.emit("join_room", gameCode, creator.nickname, creator.id);
-        }
-        else {
-          const guestNickname = game.users.filter(user => user.id === playerId)[0]
+        } else {
+          const guestNickname = game.users.filter(
+            (user) => user.id === playerId
+          )[0];
           socket.emit("join_room", gameCode, guestNickname, playerId);
         }
       }
@@ -92,6 +100,7 @@ export default function GamePage () {
         localStorage.setItem("playerId", id);
         socket.emit("join_room", gameCode, nickname, id);
         setDialogOpen(false);
+        gameRefetch();
       });
   };
 
