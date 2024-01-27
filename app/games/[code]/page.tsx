@@ -78,8 +78,10 @@ export default function GamePage() {
         } else {
           const guestNickname = game.users.filter(
             (user) => user.id === playerId
-          )[0].nickname;
-          socket.emit("join_room", gameCode, guestNickname, playerId);
+          )[0]?.nickname;
+          if (guestNickname) {
+            socket.emit("join_room", gameCode, guestNickname, playerId);
+          }
         }
       }
       socket.on("connected_users", (data: User[]) => {
