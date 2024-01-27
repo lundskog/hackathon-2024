@@ -1,6 +1,6 @@
 import http, { Server as HTTPServer } from "http";
 import { Server as SocketIoServer, Socket } from "socket.io";
-import { shuffle, chunkArray } from "@/lib/utils";
+import { shuffle, chunkArray } from "../lib/utils";
 
 type ChatMessage = {
     user: string;
@@ -115,14 +115,27 @@ io.on("connection", (socket: Socket) => {
     socket.on("start_game", (data: { roomId: string, whiteCards: string[] }) => {
         // shuffle deck
         let whiteCards = shuffle(data.whiteCards)
-        let numberOfUsers = games[data.roomId].users.length
 
-        // split up deck according to players
-        const chunkedArray = chunkArray(whiteCards, numberOfUsers);
-        console.log(chunkArray)
+        // let whiteCards = shuffle(["a", "b", "c", "d", "e", "f", "g", "h", "i"])
 
 
-        io.to(data.roomId).emit("round_start", {});
+        let nPlayers = games[data.roomId].users.length
+
+
+        const chunkSize = Math.floor(whiteCards.length / nPlayers);
+        console.log(chunkSize)
+
+        const chunkedArray = chunkArray(whiteCards, chunkSize);
+        console.log(chunkedArray);
+
+        let resCards: any = {}
+        for (let i = 0; i < chunkedArray.length; i++) {
+            resCards[games[data.roomId].users[i].playerId] = chunkedArray[i]
+        }
+        console.log(resCards)
+
+
+        io.to(data.roomId).emit("round_start", resCards);
         // { 
         //     playerId: whiteCardIds: string[]; 
         // }
