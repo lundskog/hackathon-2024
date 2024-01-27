@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
 
-export default function GamePage () {
+export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-1);
 
@@ -46,32 +46,23 @@ export default function GamePage () {
       const newSocket = io("http://localhost:3001");
       setSocket(newSocket);
     } else {
-      console.log("here")
-      if (nickname || game) {
-        console.log("here2")
-        const player = game && game.users.filter(
-          (user) => user.userId === session?.user.id
-        )[0];
-        let nickname = (player && player.nickname)
-        console.log("nickname", nickname)
-        socket.emit("join_room", gameCode, nickname ?? nickname);
-      }
       socket.on("connected_users", (data: Users) => {
         setConnectedUsers((pre) => data);
         console.log(connectedUsers);
       });
     }
-  }, [socket, nickname, game]);
-
+  }, [socket]);
 
   if (!game) return;
 
   const handleJoin = async (nickname: string) => {
+    if (!socket) return;
     await createPlayerMutation
       .mutateAsync({ gameId: game.id, nickname })
       .then((id) => {
         localStorage.setItem("playerId", id);
       });
+    socket.emit("join_room", gameCode, nickname ?? nickname);
   };
 
   const NicknamePrompt = () => {
@@ -110,6 +101,7 @@ export default function GamePage () {
         {player || game.creatorId === session?.user.id ? null : (
           <NicknamePrompt />
         )}
+        {JSON.stringify(player)}
         <div>
           <h1 className="font-semibold text-4xl">{game.name}</h1>
           <p className="font-semibold text-muted-foreground">{game.phase}</p>
