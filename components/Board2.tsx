@@ -38,29 +38,27 @@ export default function Board() {
   }, []);
 
   const handleDragEnd = (event: DragEndEvent) => {
-  const { over, active } = event;
+    const { over, active } = event;
 
-  console.log(droppedCardId);
-  console.log(active.id)
+    console.log(droppedCardId);
+    console.log(active.id)
 
-  const oldIndex = cards.indexOf(cards.find(card => card.id == active.id)!);
-  const newIndex = cards.indexOf(cards.find(card => card.id == droppedCardId)!);
-  
+    const oldIndex = cards.indexOf(cards.find(card => card.id == active.id)!);
+    const newIndex = cards.indexOf(cards.find(card => card.id == droppedCardId)!);
+    
 
-  if (droppedCardId != null){
-    setCards((cards) => {
-      return arrayMove(cards, newIndex, oldIndex);
-    })
-  }
+    if (droppedCardId != null){
+      setCards((cards) => {
+        return arrayMove(cards, newIndex, oldIndex);
+      })
+    }
 
-  // Check if the card is dropped over the droppable area
-  if (over && over.id === 'droppable') {
-    // Explicitly convert active.id to a string
-    setDroppedCardId(String(active.id));
-  } else if (!over && String(active.id) === droppedCardId) {
-    // If the card is dragged away from the droppable area, set droppedCardId to null
-    setDroppedCardId(null);
-  }
+    // Check if the card is dropped over the droppable area
+    if (over && over.id === 'droppable') {
+      // Explicitly convert active.id to a string
+      setDroppedCardId(String(active.id));
+    }
+
   };
   const addBlackCard = () => {
     const newCard = { id: `${blackCards.length + 1}`, text: 'New Black Card' };
