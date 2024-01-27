@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
+import { GameWithUsers } from "@/db/schema";
 
 export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
@@ -34,24 +35,40 @@ export default function GamePage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [nickname, setNickname] = useState<string>("");
+  const [game, setGame] = useState<GameWithUsers>();
 
   const createPlayerMutation = trpc.games.createPlayer.useMutation();
+  const playerId = localStorage.getItem("playerId");
 
-  const { data: game } = trpc.games.get.useQuery({
+  const { data: gameData } = trpc.games.get.useQuery({
     gameCode: gameCode ?? "",
   });
+
+  useEffect(() => {
+    if (gameData) {
+      setGame(gameData);
+    }
+  }, [gameData]);
 
   useEffect(() => {
     if (!socket) {
       const newSocket = io("http://localhost:3001");
       setSocket(newSocket);
     } else {
+      if (session) {
+        const creator = game?.users.filter(
+          (user) => user.userId === session.user.id
+        )[0];
+        if (creator) {
+          socket.emit("join_room", gameCode, creator.nickname);
+        }
+      }
       socket.on("connected_users", (data: Users) => {
         setConnectedUsers((pre) => data);
         console.log(connectedUsers);
       });
     }
-  }, [socket]);
+  }, [socket, session]);
 
   if (!game) return;
 
@@ -92,7 +109,6 @@ export default function GamePage() {
   };
 
   if (game && socket && socket.connected) {
-    const playerId = localStorage.getItem("playerId");
     const player = game.users.filter(
       (user) => user.id === playerId || user.userId === session?.user.id
     )[0];

@@ -193,7 +193,13 @@ export const insertGameSchema = createInsertSchema(games, {
 
 export type Deck = InferSelectModel<typeof decks>;
 export type Card = InferSelectModel<typeof cards>;
+export type Game = InferSelectModel<typeof games>;
+export type GameUser = InferSelectModel<typeof usersToGame>
 
 export interface DeckWithCards extends Deck {
   cards?: Card[];
+}
+
+export interface GameWithUsers extends Game {
+  users: GameUser[]
 }
