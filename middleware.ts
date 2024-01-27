@@ -4,6 +4,7 @@ export const config = {
   matcher: [
     "/profile",
     "/decks/create",
+    "/games/create",
     "/settings",
     "/routines",
     "/",

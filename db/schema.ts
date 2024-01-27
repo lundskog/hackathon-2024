@@ -20,15 +20,9 @@ export const discoverabilityEnum = pgEnum("discoverability", [
   "private",
 ]);
 
-export const phaseEnum = pgEnum("phase", [
-  "active",
-  "lobby"
-])
+export const phaseEnum = pgEnum("phase", ["active", "lobby"]);
 
-export const cardTypeEnum = pgEnum("card_type", [
-  "white",
-  "black",
-]);
+export const cardTypeEnum = pgEnum("card_type", ["white", "black"]);
 
 export const users = pgTable("user", {
   id: text("id").notNull().primaryKey(),
@@ -85,15 +79,22 @@ export const games = pgTable("game", {
   id: text("id").notNull().primaryKey(),
   code: text("code").notNull(),
   name: text("name"),
-  discoverability: discoverabilityEnum("discoverability").notNull().default("private"),
+  creatorId: text("creator_id").notNull(),
+  discoverability: discoverabilityEnum("discoverability")
+    .notNull()
+    .default("private"),
   phase: phaseEnum("phase").notNull().default("lobby"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: timestamp("updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const usersToGame = pgTable("game_user", {
   id: text("id").notNull().primaryKey(),
-  gameId: text("game_id").notNull().references(() => games.id, { onDelete: "cascade" }),
+  gameId: text("game_id")
+    .notNull()
+    .references(() => games.id, { onDelete: "cascade" }),
   nickname: text("nickname").notNull(),
   userId: text("user_id"),
   joinedAt: timestamp("created_at").defaultNow().notNull(),
@@ -102,81 +103,97 @@ export const usersToGame = pgTable("game_user", {
 export const gameUsersRelations = relations(usersToGame, ({ many, one }) => ({
   game: one(games, {
     fields: [usersToGame.gameId],
-    references: [games.id]
-  })
-}))
+    references: [games.id],
+  }),
+}));
 
 export const gamesRelations = relations(games, ({ many, one }) => ({
   users: many(usersToGame),
-  decks: many(decksToGames)
-}))
+  decks: many(decksToGames),
+}));
 
-export const decksToGames = pgTable("game_decks", {
-  gameId: text("game_id").notNull().references(() => games.id, { onDelete: "cascade" }),
-  deckId: text("deck_id").notNull().references(() => decks.id, { onDelete: "cascade" }),
-}, (t) => ({
-  pk: primaryKey(t.deckId, t.gameId),
-}))
+export const decksToGames = pgTable(
+  "game_decks",
+  {
+    gameId: text("game_id")
+      .notNull()
+      .references(() => games.id, { onDelete: "cascade" }),
+    deckId: text("deck_id")
+      .notNull()
+      .references(() => decks.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey(t.deckId, t.gameId),
+  })
+);
 
 export const gamesDecksRelations = relations(decksToGames, ({ many, one }) => ({
   game: one(games, {
     fields: [decksToGames.gameId],
-    references: [games.id]
+    references: [games.id],
   }),
   deck: one(decks, {
     fields: [decksToGames.deckId],
-    references: [decks.id]
-  })
-}))
+    references: [decks.id],
+  }),
+}));
 
 export const decks = pgTable("deck", {
   id: text("id").notNull().primaryKey(),
   name: text("title").notNull(),
   creatorId: text("creator_id").notNull(),
   description: text("description"),
-  discoverability: discoverabilityEnum("discoverability").notNull().default("private"),
+  discoverability: discoverabilityEnum("discoverability")
+    .notNull()
+    .default("private"),
   playCount: integer("play_count").default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: timestamp("updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const deckRelations = relations(decks, ({ many }) => ({
   games: many(decksToGames),
-  cards: many(cards)
-}))
+  cards: many(cards),
+}));
 
 export const cards = pgTable("card", {
   id: text("id").notNull().primaryKey(),
   cardText: text("card_text").notNull(),
   type: cardTypeEnum("card_type").notNull(),
-  deckId: text("deck_id").notNull().references(() => decks.id, { onDelete: "cascade" }),
+  deckId: text("deck_id")
+    .notNull()
+    .references(() => decks.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
-})
+  updatedAt: timestamp("updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
 
 export const cardDeckRelations = relations(decks, ({ many, one }) => ({
-  cards: many(cards)
-}))
+  cards: many(cards),
+}));
 
 export const deckCardRelations = relations(cards, ({ many, one }) => ({
-  deck: one(decks,
-    {
-      fields: [cards.deckId],
-      references: [decks.id]
-  })
-}))
+  deck: one(decks, {
+    fields: [cards.deckId],
+    references: [decks.id],
+  }),
+}));
 
 export const insertCardSchema = createInsertSchema(cards);
 
 export const insertDeckSchema = createInsertSchema(decks);
 
 export const insertGameSchema = createInsertSchema(games, {
-  code: z.string().optional()
+  code: z.string().optional(),
+  creatorId: z.string().optional(),
 });
 
-export type Deck = InferSelectModel<typeof decks>
-export type Card = InferSelectModel<typeof cards>
+export type Deck = InferSelectModel<typeof decks>;
+export type Card = InferSelectModel<typeof cards>;
 
 export interface DeckWithCards extends Deck {
-  cards?: Card[]
+  cards?: Card[];
 }
