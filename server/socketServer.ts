@@ -7,12 +7,16 @@ type ChatMessage = {
     time: string;
 };
 
-type Users = {
-    [nickname: string]: string;
+type User = {
+    nickname: string;
+    playerId: string;
+    socketUserId: string;
+    points: number;
+    connected: boolean;
 };
 
 type Game = {
-    connectedUsers: Users;
+    users: Array<User>;
     msgs: Array<ChatMessage>;
 };
 
@@ -33,14 +37,20 @@ const io: SocketIoServer = new SocketIoServer(httpServer, {
 io.on("connection", (socket: Socket) => {
     console.log("A user connected:", socket.id);
 
-    socket.on("join_room", (roomId: string, nickname: string) => {
+    socket.on("join_room", (roomId: string, nickname: string, playerId: string) => {
         socket.join(roomId);
         console.log(`user with id-${socket.id} joined room - ${roomId}`);
         if (!games[roomId]) {
             console.log("--- Created room with id:", roomId);
-            games[roomId] = { connectedUsers: {}, msgs: [] };
+            games[roomId] = { users: [], msgs: [] };
         }
-        games[roomId].connectedUsers[nickname] = socket.id;
+        games[roomId].users.push({
+            nickname,
+            playerId,
+            socketUserId: socket.id,
+            points: 0,
+            connected: false,
+        })
 
         // Send chat history to the user who joined the room
         if (games[roomId]) {
@@ -51,9 +61,9 @@ io.on("connection", (socket: Socket) => {
             console.log(msgs);
         }
 
-        io.to(roomId).emit("connected_users", games[roomId].connectedUsers);
+        io.to(roomId).emit("connected_users", games[roomId].users);
         console.log("--- Sent out connected users:");
-        console.log(games[roomId].connectedUsers);
+        console.log(games[roomId].users);
     });
 
     socket.on(
