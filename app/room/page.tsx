@@ -10,51 +10,24 @@ export default function Home () {
     const [showSpinner, setShowSpinner] = useState(false);
     const [roomId, setroomId] = useState("");
 
-    // Declare socket as a state variable
-    const [socket, setSocket] = useState<Socket | null>(null);
+    var socket: any;
+    socket = io("http://localhost:3001");
 
-    // Function to initialize socket connection
-    const initSocket = async () => {
-        if (!socket) {
-            const newSocket: any = io("http://localhost:3001");
-
-            // Create a promise that resolves when the 'connect' event is received
-            const connectPromise = new Promise<void>((resolve) => {
-                newSocket.on('connect', () => {
-                    console.log('Socket connected!');
-                    resolve();
-                });
-            });
-
-            setSocket(newSocket);
-
-            // Wait for the connection to be established before continuing
-            await connectPromise;
-            return newSocket;
-        }
-        return socket;
-    };
-    useEffect(() => {
-        handleJoin()
-    }, [])
-
-
-    const handleJoin = async () => {
-        const currentSocket = await initSocket();
-
-        if (currentSocket.connected && userName !== "" && roomId !== "") {
+    const handleJoin = () => {
+        if (userName !== "" && roomId !== "") {
             console.log(userName, "userName", roomId, "roomId");
-            currentSocket.emit("join_room", roomId);
+            socket.emit("join_room", roomId);
             setShowSpinner(true);
             // You can remove this setTimeout and add your own logic
             setTimeout(() => {
                 setShowChat(true);
                 setShowSpinner(false);
-            }, 2000);
+            }, 4000);
         } else {
             alert("Please fill in Username and Room Id");
         }
     };
+
     return (
         <div>
             <div
@@ -84,11 +57,7 @@ export default function Home () {
                 </button>
             </div>
             <div style={{ display: !showChat ? "none" : "" }}>
-                {socket ? (
-                    <ChatPage socket={socket} roomId={roomId} username={userName} />
-                ) : (
-                    <p>loading</p>
-                )}
+                <ChatPage socket={socket} roomId={roomId} username={userName} />
             </div>
         </div>
     );

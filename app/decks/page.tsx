@@ -97,10 +97,6 @@ export default function DecksPage() {
     });
   }
 
-  useEffect(() => {
-    console.log(myDecks);
-  }, [myDecks]);
-
   return (
     <div className="w-full h-full flex flex-col items-center">
       <div>
