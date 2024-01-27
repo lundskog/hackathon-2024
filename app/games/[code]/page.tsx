@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
 
-export default function GamePage() {
+export default function GamePage () {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-1);
 
@@ -37,25 +37,32 @@ export default function GamePage() {
 
   const createPlayerMutation = trpc.games.createPlayer.useMutation();
 
+  const { data: game } = trpc.games.get.useQuery({
+    gameCode: gameCode ?? "",
+  });
+
   useEffect(() => {
     if (!socket) {
       const newSocket = io("http://localhost:3001");
       setSocket(newSocket);
     } else {
-      if (nickname) {
-        socket.emit("join_room", gameCode, nickname);
+      console.log("here")
+      if (nickname || game) {
+        console.log("here2")
+        const player = game && game.users.filter(
+          (user) => user.userId === session?.user.id
+        )[0];
+        let nickname = (player && player.nickname)
+        console.log("nickname", nickname)
+        socket.emit("join_room", gameCode, nickname ?? nickname);
       }
       socket.on("connected_users", (data: Users) => {
-        // setChat((pre) => [...data, ...pre]);
         setConnectedUsers((pre) => data);
         console.log(connectedUsers);
       });
     }
-  }, [socket, nickname]);
+  }, [socket, nickname, game]);
 
-  const { data: game } = trpc.games.get.useQuery({
-    gameCode: gameCode ?? "",
-  });
 
   if (!game) return;
 
@@ -106,7 +113,7 @@ export default function GamePage() {
         <div>
           <h1 className="font-semibold text-4xl">{game.name}</h1>
           <p className="font-semibold text-muted-foreground">{game.phase}</p>
-          {player && player.nickname}
+          {/* {player && player.nickname} */}
 
           {connectedUsers &&
             Object.keys(connectedUsers).map((name, key) => (

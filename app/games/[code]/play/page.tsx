@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
 import ChatPage from "@/components/chat/page";
 
-export default function GamePage() {
+export default function GamePage () {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-2);
 
@@ -100,11 +100,11 @@ export default function GamePage() {
           </div>
         </div>
         <div>
-          <ChatPage
+          {player && <ChatPage
             socket={socket}
             username={player.nickname}
             roomId={game.code}
-          />
+          />}
         </div>
       </div>
     );
