@@ -2,7 +2,7 @@
 import { trpc } from "@/app/_trpc/client";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 
 import {
@@ -20,14 +20,15 @@ import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
 import ChatPage from "@/components/chat/page";
 
-export default function GamePage () {
+export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-2);
 
   const [socket, setSocket] = useState<Socket>();
-  const [gameId, setGameId] = useState<string>("");
-  const [player, setPlayer] = useState();
+  const [nickname, setNickname] = useState<string>("");
+  const [dialogOpen, setDialogOpen] = useState<boolean>(true);
   const { data: session } = useSession();
+  const nicknameInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const createPlayerMutation = trpc.games.createPlayer.useMutation();
@@ -53,33 +54,32 @@ export default function GamePage () {
       .then((id) => {
         localStorage.setItem("playerId", id);
       });
+    setDialogOpen(false);
   };
 
   const NicknamePrompt = () => {
-    const [routerOpen, setRouterOpen] = useState<boolean>(true);
-    const [nickname, setNickname] = useState<string>("");
-    return (
-      <AlertDialog open={routerOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Choose nickname</AlertDialogTitle>
-            <Input
-              onChange={(e) => setNickname(e.currentTarget.value)}
-              value={nickname}
-              placeholder={"Niels Houben"}
-            />
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => router.push("/")}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleJoin(nickname)}>
-              Join
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
+    if (nicknameInputRef && nicknameInputRef.current) {
+      return (
+        <AlertDialog open={dialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Choose nickname</AlertDialogTitle>
+              <Input ref={nicknameInputRef} placeholder={"Niels Houben"} />
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => router.push("/")}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => handleJoin(nicknameInputRef.current.value)}
+              >
+                Join
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      );
+    }
   };
 
   if (game && socket && socket.connected) {
@@ -100,11 +100,13 @@ export default function GamePage () {
           </div>
         </div>
         <div>
-          {player && <ChatPage
-            socket={socket}
-            username={player.nickname}
-            roomId={game.code}
-          />}
+          {player && (
+            <ChatPage
+              socket={socket}
+              username={player.nickname}
+              roomId={game.code}
+            />
+          )}
         </div>
       </div>
     );
