@@ -22,7 +22,7 @@ export default function Home () {
             setTimeout(() => {
                 setShowChat(true);
                 setShowSpinner(false);
-            }, 4000);
+            }, 500);
         } else {
             alert("Please fill in Username and Room Id");
         }

@@ -34,6 +34,11 @@ const ChatPage = ({ socket, username, roomId }: any) => {
     useEffect(() => {
         socket.on("receive_msg", (data: IMsgDataTypes) => {
             setChat((pre) => [...pre, data]);
+            console.log(data)
+        });
+        socket.on("chat_history", (data: IMsgDataTypes[]) => {
+            setChat((pre) => [...data, ...pre]);
+            console.log(data)
         });
     }, [socket]);
 
