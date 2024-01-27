@@ -2,21 +2,20 @@
 import React, { useEffect, useState } from "react";
 import style from "./chat.module.css";
 
-interface IMsgDataTypes {
-    roomId: String | number;
-    user: String;
-    msg: String;
-    time: String;
-}
+type ChatMessage = {
+    user: string;
+    msg: string;
+    time: string;
+};
 
 const ChatPage = ({ socket, username, roomId }: any) => {
     const [currentMsg, setCurrentMsg] = useState("");
-    const [chat, setChat] = useState<IMsgDataTypes[]>([]);
+    const [chat, setChat] = useState<ChatMessage[]>([]);
 
     const sendData = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (currentMsg !== "") {
-            const msgData: IMsgDataTypes = {
+            const msgData = {
                 roomId,
                 user: username,
                 msg: currentMsg,
@@ -32,11 +31,11 @@ const ChatPage = ({ socket, username, roomId }: any) => {
 
 
     useEffect(() => {
-        socket.on("receive_msg", (data: IMsgDataTypes) => {
+        socket.on("receive_msg", (data: ChatMessage) => {
             setChat((pre) => [...pre, data]);
             console.log(data)
         });
-        socket.on("chat_history", (data: IMsgDataTypes[]) => {
+        socket.on("chat_history", (data: ChatMessage[]) => {
             setChat((pre) => [...data, ...pre]);
             console.log(data)
         });
@@ -52,7 +51,7 @@ const ChatPage = ({ socket, username, roomId }: any) => {
                     </p>
                 </div>
                 <div>
-                    {chat.map(({ roomId, user, msg, time }, key) => (
+                    {chat.map(({ user, msg, time }, key) => (
                         <div
                             key={key}
                             className={

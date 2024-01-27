@@ -1,8 +1,13 @@
 import http, { Server as HTTPServer } from "http";
 import { Server as SocketIoServer, Socket } from "socket.io";
 
+type ChatMessage = {
+    user: string;
+    msg: string;
+    time: string;
+};
 // In-memory storage for chat msgs
-const chatHistory: { [roomId: string]: { msg: Array<{ user: string; msg: string }> } } = {};
+const chatHistory: { [roomId: string]: { msgs: Array<ChatMessage> } } = {};
 
 const httpServer: HTTPServer = http.createServer();
 
@@ -25,23 +30,24 @@ io.on("connection", (socket: Socket) => {
         console.log(chatHistory)
         // Send chat history to the user who joined the room
         if (chatHistory[roomId]) {
-            const msgs = chatHistory[roomId].msg;
+            const msgs = chatHistory[roomId].msgs;
             socket.emit("chat_history", msgs);
             console.log(msgs)
         }
     });
 
-    socket.on("send_msg", (data: { roomId: string; user: string; msg: string }) => {
+    socket.on("send_msg", (data: { roomId: string; user: string; msg: string; time: string }) => {
         console.log(data, "DATA");
+        let msg: ChatMessage = { user: data.user, msg: data.msg, time: data.time }
 
         // Save the msg in the chat history
         if (!chatHistory[data.roomId]) {
-            chatHistory[data.roomId] = { msg: [] };
+            chatHistory[data.roomId] = { msgs: [] };
         }
-        chatHistory[data.roomId].msg.push({ ...data });
+        chatHistory[data.roomId].msgs.push(msg);
 
         // Broadcast the msg to all users in the room
-        io.to(data.roomId).emit("receive_msg", data);
+        io.to(data.roomId).emit("receive_msg", msg);
     });
 
     socket.on("disconnect", () => {
