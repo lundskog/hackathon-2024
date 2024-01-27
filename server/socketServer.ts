@@ -112,14 +112,16 @@ io.on("connection", (socket: Socket) => {
         }
     );
 
-    socket.on("start_game", (data: { roomId: string, whiteCards: string[] }) => {
+    socket.on("start_game", (roomId: string, startingWhiteCards: string[]) => {
+        console.log("roomId:", roomId)
+        console.log("whiteCards:", startingWhiteCards)
         // shuffle deck
-        let whiteCards = shuffle(data.whiteCards)
+        let whiteCards = shuffle(startingWhiteCards)
 
         // let whiteCards = shuffle(["a", "b", "c", "d", "e", "f", "g", "h", "i"])
 
 
-        let nPlayers = games[data.roomId].users.length
+        let nPlayers = games[roomId].users.length
 
 
         const chunkSize = Math.floor(whiteCards.length / nPlayers);
@@ -130,12 +132,12 @@ io.on("connection", (socket: Socket) => {
 
         let resCards: any = {}
         for (let i = 0; i < chunkedArray.length; i++) {
-            resCards[games[data.roomId].users[i].playerId] = chunkedArray[i]
+            resCards[games[roomId].users[i].playerId] = chunkedArray[i]
         }
         console.log(resCards)
 
 
-        io.to(data.roomId).emit("round_start", resCards);
+        io.to(roomId).emit("round_start", resCards);
         // { 
         //     playerId: whiteCardIds: string[]; 
         // }
