@@ -173,14 +173,18 @@ export default function GamePage() {
           </div>
         </div>
         <div className="flex items-end">
-          <ChatPage
-            socket={socket}
-            roomId={gameCode}
-            username={player.nickname}
-          />
-          <Button onClick={() => handleStartGame(socket)} className="m-4">
-            Start game
-          </Button>
+          {player && (
+            <ChatPage
+              socket={socket}
+              roomId={gameCode}
+              username={player.nickname}
+            />
+          )}
+          {game.creatorId === session?.user.id && (
+            <Button onClick={() => handleStartGame(socket)} className="m-4">
+              Start game
+            </Button>
+          )}
         </div>
       </div>
     );
