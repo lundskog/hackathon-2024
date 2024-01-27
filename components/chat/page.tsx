@@ -67,23 +67,23 @@ const ChatPage = ({
 
   return (
     <Card className="max-w-sm p-4">
-      <div className="h-80 overflow-y-scroll">
+      <div className="h-80 overflow-y-scroll space-y-1">
         {chat.map(({ user, msg, time }, key) => (
           <div
             key={key}
-            className={
-              user == username ? style.chatProfileRight : style.chatProfileLeft
-            }
+            className={`flex gap-1 items-center
+            ${user == username ? "flex-row-reverse" : ""}
+            `}
           >
+            <span className="text-xs text-muted-foreground">{time}</span>
             <span
-              className={style.chatProfileSpan}
-              style={{ textAlign: user == username ? "right" : "left" }}
+              className={`w-8 h-8 p-2 rounded-full flex justify-center items-center ${
+                user == username ? "bg-primary" : "bg-accent"
+              }`}
             >
               {user.charAt(0)}
             </span>
-            <h3 style={{ textAlign: user == username ? "right" : "left" }}>
-              {msg}
-            </h3>
+            <h3 className="font-medium">{msg}</h3>
           </div>
         ))}
         <div ref={endOfChatRef} />
