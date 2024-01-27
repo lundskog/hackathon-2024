@@ -5,6 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 
+type Users = {
+  [nickname: string]: string;
+};
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,10 +28,12 @@ export default function GamePage() {
   const gameCode = pathnameList?.at(-1);
 
   const [socket, setSocket] = useState<Socket>();
+  const [connectedUsers, setConnectedUsers] = useState<Users>();
   const [gameId, setGameId] = useState<string>("");
   const [player, setPlayer] = useState();
   const { data: session } = useSession();
   const router = useRouter();
+  const [nickname, setNickname] = useState<string>("");
 
   const createPlayerMutation = trpc.games.createPlayer.useMutation();
 
@@ -36,9 +42,16 @@ export default function GamePage() {
       const newSocket = io("http://localhost:3001");
       setSocket(newSocket);
     } else {
-      socket.emit("join_room", gameCode);
+      if (nickname) {
+        socket.emit("join_room", gameCode, nickname);
+      }
+      socket.on("connected_users", (data: Users) => {
+        // setChat((pre) => [...data, ...pre]);
+        setConnectedUsers((pre) => data);
+        console.log(connectedUsers);
+      });
     }
-  }, [socket]);
+  }, [socket, nickname]);
 
   const { data: game } = trpc.games.get.useQuery({
     gameCode: gameCode ?? "",
@@ -56,7 +69,6 @@ export default function GamePage() {
 
   const NicknamePrompt = () => {
     const [routerOpen, setRouterOpen] = useState<boolean>(true);
-    const [nickname, setNickname] = useState<string>("");
     return (
       <AlertDialog open={routerOpen}>
         <AlertDialogContent>
@@ -95,6 +107,13 @@ export default function GamePage() {
           <h1 className="font-semibold text-4xl">{game.name}</h1>
           <p className="font-semibold text-muted-foreground">{game.phase}</p>
           {player && player.nickname}
+
+          {connectedUsers &&
+            Object.keys(connectedUsers).map((name, key) => (
+              <div key={key}>{name}</div>
+            ))}
+
+          <p></p>
         </div>
       </div>
     );
