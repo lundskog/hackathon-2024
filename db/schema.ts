@@ -13,10 +13,16 @@ import { InferSelectModel, relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { nullable, z } from "zod";
 import { sql } from "drizzle-orm";
+import { v4 } from "uuid";
 
-export const gameDiscoverabilityEnum = pgEnum("game_discoverability", [
+export const discoverabilityEnum = pgEnum("discoverability", [
   "public",
   "private",
+]);
+
+export const cardTypeEnum = pgEnum("card_type", [
+  "white",
+  "black",
 ]);
 
 export const users = pgTable("user", {
@@ -75,15 +81,41 @@ export const games = pgTable("game", {
   name: text("name"),
 });
 
-export const decks = pgTable("deck", {
+export const gameUsers = pgTable("game_user", {
   id: text("id").notNull().primaryKey(),
-  name: text("title"),
-  description: text("description"),
+  gameId: text("game_id").notNull().references(() => games.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  userId: text("user_id"),
 });
 
-export const gameUser = pgTable("game_user", {
+export const decks = pgTable("deck", {
   id: text("id").notNull().primaryKey(),
-  gameId: text("game_id"),
-  name: text("name"),
-  userId: text(""),
+  name: text("title").notNull(),
+  creatorId: text("creator_id").notNull(),
+  description: text("description"),
+  discoverability: discoverabilityEnum("discoverability").notNull().default("private"),
+  playCount: integer("play_count").default(0)
 });
+
+export const cards = pgTable("card", {
+  id: text("id").notNull().primaryKey(),
+  cardText: text("card_text").notNull(),
+  type: cardTypeEnum("card_type").notNull(),
+  deckId: text("deck_id").notNull()
+})
+
+export const cardDeckRelations = relations(decks, ({ many, one }) => ({
+  cards: many(cards)
+}))
+
+export const deckCardRelations = relations(cards, ({ many, one }) => ({
+  deck: one(decks,
+    {
+      fields: [cards.deckId],
+      references: [decks.id]
+  })
+}))
+
+export const insertCardSchema = createInsertSchema(cards);
+
+export const insertDeckSchema = createInsertSchema(decks);

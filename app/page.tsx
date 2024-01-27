@@ -3,13 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
+import { trpc } from "./_trpc/client";
 
-export default function Home () {
-  const x = trpc.example.example.useMutation()
-  async function test () {
+export default function Home() {
+  const x = trpc.example.example.useMutation();
+  async function test() {
     // console.log(x)
-    let res = await x.mutateAsync()
-    console.log(res)
+    let res = await x.mutateAsync();
+    console.log(res);
   }
 
   return (
