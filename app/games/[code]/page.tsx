@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import { v4 } from "uuid";
 
 export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
@@ -27,6 +28,8 @@ export default function GamePage() {
   const [player, setPlayer] = useState();
   const { data: session } = useSession();
   const router = useRouter();
+
+  const createPlayerMutation = trpc.games.createPlayer.useMutation();
 
   useEffect(() => {
     if (!socket) {
@@ -41,22 +44,37 @@ export default function GamePage() {
     gameCode: gameCode ?? "",
   });
 
-  function handleJoin() {}
+  if (!game) return;
+
+  const handleJoin = async (nickname: string) => {
+    await createPlayerMutation
+      .mutateAsync({ gameId: game.id, nickname })
+      .then((id) => {
+        localStorage.setItem("playerId", id);
+      });
+  };
 
   const NicknamePrompt = () => {
     const [routerOpen, setRouterOpen] = useState<boolean>(true);
+    const [nickname, setNickname] = useState<string>("");
     return (
       <AlertDialog open={routerOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Choose nickname</AlertDialogTitle>
-            <Input placeholder={"Niels Houben"} />
+            <Input
+              onChange={(e) => setNickname(e.currentTarget.value)}
+              value={nickname}
+              placeholder={"Niels Houben"}
+            />
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => router.push("/")}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction>Join</AlertDialogAction>
+            <AlertDialogAction onClick={() => handleJoin(nickname)}>
+              Join
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -64,18 +82,19 @@ export default function GamePage() {
   };
 
   if (game && socket && socket.connected) {
-    const GuestInLocal = game.users.filter(
-      (user) => user.id === localStorage.getItem("playerId")
+    const playerId = localStorage.getItem("playerId");
+    const player = game.users.filter(
+      (user) => user.id === playerId || user.userId === session?.user.id
     )[0];
-
     return (
       <div>
-        {GuestInLocal || game.creatorId === session?.user.id ? null : (
+        {player || game.creatorId === session?.user.id ? null : (
           <NicknamePrompt />
         )}
         <div>
           <h1 className="font-semibold text-4xl">{game.name}</h1>
           <p className="font-semibold text-muted-foreground">{game.phase}</p>
+          {player.nickname}
         </div>
       </div>
     );

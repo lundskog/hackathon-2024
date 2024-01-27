@@ -55,12 +55,14 @@ export const gameRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const id = v4();
       await ctx.db.insert(usersToGame).values({
-        id: v4(),
+        id,
         gameId: input.gameId,
         nickname: input.nickname,
         userId: ctx.session?.user.id,
       });
+      return id;
     }),
   get: publicProcedure
     .input(
