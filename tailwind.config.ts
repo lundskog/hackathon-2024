@@ -65,26 +65,15 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
-        fadeInUp: {
-          "0%": {
-            top: "10px",
-            opacity: "0",
-          },
-          "100%": {
-            top: "0px",
-            opacity: "1",
-          },
-        },
-        "slide-down": {
-          from: { transform: 'translateY(-200%)', opacity: '1' },
-          to: { transform: 'translateY(0)', opacity: '1' },
+        "slide-in-rotate": {
+          '0%': { transform: 'translate(0, -42rem) rotate(-720deg)'},
+          '100%': { transform: ' translate(0, 0rem) rotate(0deg)'},
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fadeIn-up": "fadeInUp 0.2s ease forwards",
-        "slide-down": "slide-down 0.8s ease-in-out",
+        "slide-in-rotate": "slide-in-rotate 1s ease-in"
       },
     },
     plugins: [require("tailwindcss-animate")],

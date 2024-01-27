@@ -27,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
 import { GameWithUsers } from "@/db/schema";
+import ChatPage from "@/components/chat/page";
 
 export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
@@ -131,28 +132,35 @@ export default function GamePage() {
     );
   };
 
-  if (game && socket && socket.connected) {
+  if (game && socket && socket.connected && gameCode) {
     const player = game.users.filter(
       (user) => user.id === playerId || user.userId === session?.user.id
     )[0];
     return (
-      <div>
-        {player || game.creatorId === session?.user.id ? null : (
-          <NicknamePrompt />
-        )}
-        {JSON.stringify(player)}
+      <div className="flex flex-col justify-between">
         <div>
-          <h1 className="font-semibold text-4xl">{game.name}</h1>
-          <p className="font-semibold text-muted-foreground">{game.phase}</p>
-          {/* {player && player.nickname} */}
+          {player || game.creatorId === session?.user.id ? null : (
+            <NicknamePrompt />
+          )}
+          {JSON.stringify(player)}
+          <div>
+            <h1 className="font-semibold text-4xl">{game.name}</h1>
+            <p className="font-semibold text-muted-foreground">{game.phase}</p>
+            {/* {player && player.nickname} */}
 
-          {connectedUsers &&
-            connectedUsers.map((user: User, key) => (
-              <div key={key}>{user.nickname}</div>
-            ))}
+            {connectedUsers &&
+              connectedUsers.map((user: User, key) => (
+                <div key={key}>{user.nickname}</div>
+              ))}
 
-          <p></p>
+            <p></p>
+          </div>
         </div>
+        <ChatPage
+          socket={socket}
+          roomId={gameCode}
+          username={player.nickname}
+        />
       </div>
     );
   }
