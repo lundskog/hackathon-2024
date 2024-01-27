@@ -36,7 +36,6 @@ const io: SocketIoServer = new SocketIoServer(httpServer, {
 
 io.on("connection", (socket: Socket) => {
     console.log("A user connected:", socket.id);
-
     socket.on("join_room", (roomId: string, nickname: string, playerId: string) => {
         socket.join(roomId);
         console.log(`user with id-${socket.id} joined room - ${roomId}`);
@@ -50,9 +49,12 @@ io.on("connection", (socket: Socket) => {
                 playerId,
                 socketUserId: socket.id,
                 points: 0,
-                connected: false,
+                connected: true,
             })
-
+        }
+        else {
+            let userObject: User = games[roomId].users.filter(x => x.playerId == playerId)[0]
+            userObject.socketUserId = socket.id
         }
 
         // Send chat history to the user who joined the room
