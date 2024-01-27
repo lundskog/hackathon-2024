@@ -22,9 +22,7 @@ export const deckRouter = createTRPCRouter({
     }).optional()).query(async ({ ctx, input }) => {
       const res = await ctx.db.query.decks.findMany({
         where: eq(decks.creatorId, input?.userId ?? ctx.session.user.id),
-        with: {
-          cards: true
-        }
+        with: {cards: true}
       })
       return res;
     }),
