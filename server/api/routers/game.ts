@@ -75,6 +75,15 @@ export const gameRouter = createTRPCRouter({
         where: eq(games.code, input.gameCode),
         with: {
           users: true,
+          decks: {
+            with: {
+              deck: {
+                with: {
+                  cards: true
+                }
+              }
+            }
+          }
         },
       });
       return res;

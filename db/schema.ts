@@ -201,5 +201,10 @@ export interface DeckWithCards extends Deck {
 }
 
 export interface GameWithUsers extends Game {
-  users: GameUser[]
+  users: GameUser[],
+  decks: {
+    deckId: string,
+    gameId: string,
+    deck: DeckWithCards
+  }[]
 }

@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
 import { GameWithUsers } from "@/db/schema";
 import ChatPage from "@/components/chat/page";
+import { Button } from "@/components/ui/button";
 
 export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
@@ -96,6 +97,10 @@ export default function GamePage() {
 
   if (!game) return;
 
+  const handleStartGame = (socket: Socket) => {
+    socket.emit("start_game", gameCode, game.decks);
+  };
+
   const handleJoin = async (nickname: string) => {
     if (!socket) return;
     await createPlayerMutation
@@ -158,11 +163,14 @@ export default function GamePage() {
             <p></p>
           </div>
         </div>
-        <ChatPage
-          socket={socket}
-          roomId={gameCode}
-          username={player.nickname}
-        />
+        <div className="flex items-end">
+          <ChatPage
+            socket={socket}
+            roomId={gameCode}
+            username={player.nickname}
+          />
+          <Button className="m-4">Start game</Button>
+        </div>
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import http, { Server as HTTPServer } from "http";
 import { Server as SocketIoServer, Socket } from "socket.io";
-import { shuffle, chunkArray } from "@/lib/utils";
+import { shuffle, chunkArray } from "../lib/utils";
 
 type ChatMessage = {
     user: string;
