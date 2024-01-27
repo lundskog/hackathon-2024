@@ -66,14 +66,14 @@ module.exports = {
           to: { height: 0 },
         },
         "slide-in-rotate": {
-          '0%': { transform: 'translate(0, -100rem) rotate(180deg)'},
+          '0%': { transform: 'translate(0, -42rem) rotate(-720deg)'},
           '100%': { transform: ' translate(0, 0rem) rotate(0deg)'},
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "slide-in-rotate": "slide-in-rotate 0.5s ease-in"
+        "slide-in-rotate": "slide-in-rotate 1s ease-in"
       },
     },
   },
