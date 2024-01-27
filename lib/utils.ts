@@ -63,8 +63,9 @@ export function shuffle (array: string[]) {
 
 export function chunkArray (array: string[], chunkSize: number) {
   const result = [];
+  const length = array.length;
 
-  for (let i = 0; i < array.length; i += chunkSize) {
+  for (let i = 0; i < length; i += chunkSize) {
     result.push(array.slice(i, i + chunkSize));
   }
 
