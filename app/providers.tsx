@@ -10,9 +10,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const { status } = useSession();
   return (
     <ThemeProvider attribute="class">
-      <TRPCProvider>
-        {status === "loading" ? "Loading session..." : children}
-      </TRPCProvider>
+      <TRPCProvider>{status === "loading" ? null : children}</TRPCProvider>
     </ThemeProvider>
   );
 }

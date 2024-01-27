@@ -50,6 +50,7 @@ export function CreateGameForm() {
   const createGameMutation = trpc.games.create.useMutation();
   const createPlayerMutation = trpc.games.createPlayer.useMutation();
   const [selectedDecks, setSelectedDecks] = useState<string[]>([]);
+  const [deckErrorMsg, setDeckErrorMsg] = useState<string>("");
   const router = useRouter();
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -61,13 +62,26 @@ export function CreateGameForm() {
     },
   });
 
+  useEffect(() => {
+    if (selectedDecks.length > 0) {
+      setDeckErrorMsg("");
+    }
+  }, [selectedDecks]);
+
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     const id = v4();
+    if (selectedDecks.length < 1) {
+      setDeckErrorMsg("No decks selected.");
+      return;
+    }
     await createGameMutation
-      .mutateAsync({ id, discoverability: values.type, name: values.gamename })
+      .mutateAsync({
+        game: { id, discoverability: values.type, name: values.gamename },
+        selectedDecks: selectedDecks,
+      })
       .then(async (code) => {
         console.log("game created");
         await createPlayerMutation
@@ -195,6 +209,9 @@ export function CreateGameForm() {
             <h1 className="font-semibold text-2xl">Decks</h1>
             <p className="text-sm font-medium text-muted-foreground">
               Select the decks you want to play with.
+            </p>
+            <p className="text-destructive text-xs font-medium">
+              {deckErrorMsg}
             </p>
           </div>
           <div className="flex justify-between">
