@@ -1,7 +1,10 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 
 export default function BlackCard() {
+  var int ,[blackCard, setBlackCard] = useState(0)
   return (
-    <div className='w-72 h-96 text-black-400 bg-orange-500 rounded-md flex items-center justify-center animate-slide-in-rotate'>BlackCard</div>
+    <div className='w-72 h-96 text-white bg-slate-900 rounded-md flex items-center justify-center animate-slide-in-rotate'>blackCard</div>
   )
 }

@@ -1,7 +1,5 @@
 import BlackCard from '@/components/BlackCard'
-import React from 'react'
-
-
+import React, { useEffect , useState} from 'react'
 
 export default function page() {
   return (
