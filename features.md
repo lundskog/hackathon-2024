@@ -26,3 +26,6 @@
 
 - [ ] Animationer
 
+- [] UI
+    - [] Responsive
+
