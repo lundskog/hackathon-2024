@@ -44,13 +44,16 @@ io.on("connection", (socket: Socket) => {
             console.log("--- Created room with id:", roomId);
             games[roomId] = { users: [], msgs: [] };
         }
-        games[roomId].users.push({
-            nickname,
-            playerId,
-            socketUserId: socket.id,
-            points: 0,
-            connected: false,
-        })
+        if (games[roomId].users.filter(x => x.playerId == playerId).length == 0) {
+            games[roomId].users.push({
+                nickname,
+                playerId,
+                socketUserId: socket.id,
+                points: 0,
+                connected: false,
+            })
+
+        }
 
         // Send chat history to the user who joined the room
         if (games[roomId]) {

@@ -70,6 +70,10 @@ export default function GamePage () {
         if (creator) {
           socket.emit("join_room", gameCode, creator.nickname, creator.id);
         }
+        else {
+          const guestNickname = game.users.filter(user => user.id === playerId)[0]
+          socket.emit("join_room", gameCode, guestNickname, playerId);
+        }
       }
       socket.on("connected_users", (data: User[]) => {
         setConnectedUsers((pre) => data);
