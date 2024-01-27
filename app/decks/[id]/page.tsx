@@ -4,34 +4,69 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { DeckWithCards } from "@/db/schema";
 import { usePathname } from "next/navigation";
-import React, { useEffect, useRef } from "react";
+import React, { FormEvent, useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
 
 export default function DeckPage() {
   const pathnameList = usePathname()?.split("/");
   const deckId = pathnameList?.at(-1);
 
+  const [deck, setDeck] = useState<DeckWithCards>();
+
   const whiteCardInput = useRef<HTMLInputElement>(null);
   const blackCardInput = useRef<HTMLInputElement>(null);
 
   const addCardMutation = trpc.decks.createCard.useMutation();
-  const { data: deck, refetch: deckRefetch } = trpc.decks.getOne.useQuery(
+  const { data: deckData, refetch: deckRefetch } = trpc.decks.getOne.useQuery(
     {
       deckId: deckId ?? "",
     },
     { enabled: deckId ? deckId.length > 0 : false }
   );
 
+  useEffect(() => {
+    if (deckData) {
+      setDeck(deckData);
+    }
+  }, [deckData]);
+
   async function handleAddCard(
+    e: FormEvent,
     deckId: string,
     cardText: string,
     type: "white" | "black"
   ) {
+    e.preventDefault();
+    if (whiteCardInput.current && type === "white") {
+      whiteCardInput.current.value = "";
+    }
+    if (blackCardInput.current && type === "black") {
+      blackCardInput.current.value = "";
+    }
+    const id = v4();
     await addCardMutation
-      .mutateAsync({ deckId, cardText, type, id: v4() })
+      .mutateAsync({ deckId, cardText, type, id })
       .then(() => {
-        deckRefetch();
+        setDeck((old) => {
+          if (old) {
+            const cards = old.cards;
+            const x: DeckWithCards = {
+              ...old,
+              cards: [
+                ...(cards ?? []),
+                {
+                  deckId,
+                  cardText,
+                  type,
+                  id,
+                },
+              ],
+            };
+            return x;
+          }
+        });
       });
   }
 
@@ -45,35 +80,35 @@ export default function DeckPage() {
           </p>
         </div>
         <div className="flex gap-1 max-w-2xl">
-          <form className="flex gap-1 w-full">
+          <form
+            onSubmit={(e) => {
+              const c = whiteCardInput.current;
+              if (c && c.value.trim().length > 0) {
+                void handleAddCard(
+                  e,
+                  deck.id,
+                  whiteCardInput.current.value,
+                  "white"
+                );
+              }
+            }}
+            className="flex gap-1 w-full"
+          >
             <Input
               ref={whiteCardInput}
               placeholder="Write white card here..."
             />
-            <Button
-              onClick={() => {
-                const c = whiteCardInput.current;
-                if (c && c.value.trim().length > 0) {
-                  void handleAddCard(
-                    deck.id,
-                    whiteCardInput.current.value,
-                    "white"
-                  );
-                }
-              }}
-            >
-              Add
-            </Button>
+            <Button type="submit">Add</Button>
           </form>
         </div>
         <div>
           White cards:
-          <div className="flex flex-wrap gap-1">
-            {deck.cards.map((card) => {
+          <div className="flex flex-wrap gap-1 max-w-2xl max-h-80 overflow-scroll w-fit">
+            {deck.cards?.map((card) => {
               if (card.type === "white") {
                 return (
                   <Card
-                    className="p-2 w-fit bg-white text-black text-sm font-medium"
+                    className="p-2 w-fit bg-white text-black text-sm font-medium max-w-sm"
                     key={card.id}
                   >
                     {card.cardText}
@@ -84,34 +119,43 @@ export default function DeckPage() {
           </div>
         </div>
         <div className="flex gap-1 max-w-2xl">
-          <form className="flex gap-1 w-full">
+          <form
+            onSubmit={(e) => {
+              const c = blackCardInput.current;
+              if (c && c.value.trim().length > 0) {
+                void handleAddCard(
+                  e,
+                  deck.id,
+                  blackCardInput.current.value,
+                  "black"
+                );
+              }
+            }}
+            className="flex gap-1 w-full"
+          >
             <Input
               ref={blackCardInput}
               placeholder="Write black card here..."
             />
-            <Button
-              onClick={() => {
-                const c = blackCardInput.current;
-                if (c && c.value.trim().length > 0) {
-                  void handleAddCard(
-                    deck.id,
-                    blackCardInput.current.value,
-                    "black"
-                  );
-                }
-              }}
-            >
-              Add
-            </Button>
+            <Button type="submit">Add</Button>
           </form>
         </div>
-        <div>
+        <div className="">
           Black cards:
-          {deck.cards.map((card) => {
-            if (card.type === "black") {
-              return <div key={card.id}>{card.cardText}</div>;
-            }
-          })}
+          <div className="flex flex-wrap gap-1 max-w-2xl max-h-80 overflow-scroll w-fit">
+            {deck.cards?.map((card) => {
+              if (card.type === "black") {
+                return (
+                  <Card
+                    className="p-2 w-fit bg-black text-white text-sm font-medium"
+                    key={card.id}
+                  >
+                    {card.cardText}
+                  </Card>
+                );
+              }
+            })}
+          </div>
         </div>
       </div>
     );

@@ -119,3 +119,10 @@ export const deckCardRelations = relations(cards, ({ many, one }) => ({
 export const insertCardSchema = createInsertSchema(cards);
 
 export const insertDeckSchema = createInsertSchema(decks);
+
+export type Deck = InferSelectModel<typeof decks>
+export type Card = InferSelectModel<typeof cards>
+
+export interface DeckWithCards extends Deck {
+  cards?: Card[]
+}

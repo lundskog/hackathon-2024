@@ -74,17 +74,17 @@ module.exports = {
             top: "0px",
             opacity: "1",
           },
-          "slide-down": {
-            from: { transform: 'translateY(-200%)', opacity: '1' },
-            to: { transform: 'translateY(0)', opacity: '1' },
-          },
         },
-        animation: {
-          "accordion-down": "accordion-down 0.2s ease-out",
-          "accordion-up": "accordion-up 0.2s ease-out",
-          "fadeIn-up": "fadeInUp 0.2s ease forwards",
-          "slide-down": "slide-down 0.8s ease-in-out",
+        "slide-down": {
+          from: { transform: 'translateY(-200%)', opacity: '1' },
+          to: { transform: 'translateY(0)', opacity: '1' },
         },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        "fadeIn-up": "fadeInUp 0.2s ease forwards",
+        "slide-down": "slide-down 0.8s ease-in-out",
       },
     },
     plugins: [require("tailwindcss-animate")],
