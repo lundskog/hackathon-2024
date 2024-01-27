@@ -5,14 +5,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  type CarouselApi,
-} from "@/components/ui/carousel";
 
 import { Plus } from "lucide-react";
 
@@ -39,6 +31,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useEffect, useState } from "react";
 import { trpc } from "@/app/_trpc/client";
 import Link from "next/link";
+import { v4 } from "uuid";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   gamename: z.string().min(2, {
@@ -53,14 +47,10 @@ const formSchema = z.object({
 export function CreateGameForm() {
   const { data: session } = useSession();
   const { data: myDecks } = trpc.decks.get.useQuery();
-  const [api, setApi] = useState<CarouselApi>();
-
-  useEffect(() => {
-    if (!api) {
-      return;
-    }
-  }, [api]);
-
+  const createGameMutation = trpc.games.create.useMutation();
+  const createPlayerMutation = trpc.games.createPlayer.useMutation();
+  const [selectedDecks, setSelectedDecks] = useState<string[]>([]);
+  const router = useRouter();
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -72,10 +62,21 @@ export function CreateGameForm() {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values);
+    const id = v4();
+    await createGameMutation
+      .mutateAsync({ id, discoverability: values.type, name: values.gamename })
+      .then(async (code) => {
+        console.log("game created");
+        await createPlayerMutation
+          .mutateAsync({ gameId: id, nickname: values.nickname })
+          .then(() => {
+            console.log("player created");
+            router.push(`/games/${code}`);
+          });
+      });
   }
 
   return (
@@ -112,21 +113,6 @@ export function CreateGameForm() {
               </CarouselContent>
             </Carousel>
           </div> */}
-          {/* <Card className="p-4 text-sm text-muted-foreground flex gap-2 justify-between items-center">
-        <div className="flex gap-2">
-        <Avatar>
-        <AvatarImage src={session?.user.image ?? undefined} />
-        <AvatarFallback></AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col font-medium">
-        Logged in as{" "}
-        <span className="font-semibold text-foreground text-base">
-        {session?.user.name}
-        </span>
-        </div>
-        </div>
-        <Button size={"sm"}>Change name</Button>
-      </Card> */}
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
@@ -136,6 +122,7 @@ export function CreateGameForm() {
                   <FormLabel>Game Name</FormLabel>
                   <FormControl>
                     <Input
+                      autoFocus
                       type="text"
                       placeholder="Lilla Västerås"
                       {...field}
@@ -159,7 +146,7 @@ export function CreateGameForm() {
                     <Input type="text" placeholder="Niels Houben" {...field} />
                   </FormControl>
                   <FormDescription>
-                    This will be your name in game.
+                    This will be your in-game name.
                     {/* If you want to change your name. */}
                   </FormDescription>
                   <FormMessage />
@@ -210,11 +197,25 @@ export function CreateGameForm() {
               Select the decks you want to play with.
             </p>
           </div>
-          <Link href={"/decks/create"}>
-            <Button size={"sm"} className="font-semibold">
-              New deck
-            </Button>
-          </Link>
+          <div className="flex justify-between">
+            <Link href={"/decks/create"}>
+              <Button size={"sm"} className="font-semibold">
+                New deck
+              </Button>
+            </Link>
+            <div className="flex gap-2">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={session?.user.image ?? undefined} />
+                <AvatarFallback></AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col text-xs text-muted-foreground font-medium">
+                Logged in as{" "}
+                <span className="font-semibold text-foreground">
+                  {session?.user.name}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="flex flex-col gap-2 max-h-[400px] overflow-scroll">
           {myDecks?.map((deck, index) => {
@@ -271,7 +272,33 @@ export function CreateGameForm() {
                       W: {whiteCards.length}, B: {blackCards.length}
                     </p>
                   </div>
-                  <Button size="sm">Use</Button>
+                  {selectedDecks.includes(deck.id) ? (
+                    <Button
+                      variant={"destructive"}
+                      onClick={() => {
+                        setSelectedDecks((decks) => {
+                          return decks.filter((d) => d !== deck.id);
+                        });
+                      }}
+                      size="sm"
+                    >
+                      Remove
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        setSelectedDecks((decks) => {
+                          if (!decks.includes(deck.id)) {
+                            return [...decks, deck.id];
+                          }
+                          return decks;
+                        });
+                      }}
+                      size="sm"
+                    >
+                      Use
+                    </Button>
+                  )}
                 </div>
               </Card>
             );

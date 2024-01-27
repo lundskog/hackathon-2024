@@ -20,6 +20,11 @@ export const discoverabilityEnum = pgEnum("discoverability", [
   "private",
 ]);
 
+export const phaseEnum = pgEnum("phase", [
+  "active",
+  "lobby"
+])
+
 export const cardTypeEnum = pgEnum("card_type", [
   "white",
   "black",
@@ -78,15 +83,34 @@ export const verificationTokens = pgTable(
 
 export const games = pgTable("game", {
   id: text("id").notNull().primaryKey(),
+  code: text("code").notNull(),
   name: text("name"),
+  discoverability: discoverabilityEnum("discoverability").notNull().default("private"),
 });
 
 export const gameUsers = pgTable("game_user", {
   id: text("id").notNull().primaryKey(),
   gameId: text("game_id").notNull().references(() => games.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
+  nickname: text("nickname").notNull(),
   userId: text("user_id"),
 });
+
+export const gameUserRelations = relations(gameUsers, ({ many, one }) => ({
+  game: one(games, {
+    fields: [gameUsers.gameId],
+    references: [games.id]
+  })
+}))
+
+export const usersGameRelations = relations(games, ({ many, one }) => ({
+  users: many(gameUsers)
+}))
+
+export const gameDecks = pgTable("game_decks", {
+  id: text("id").notNull().primaryKey(),
+  gameId: text("game_id").notNull().references(() => games.id, { onDelete: "cascade" }),
+  deckId: text("deck_id").notNull().references(() => decks.id, { onDelete: "cascade" }),
+})
 
 export const decks = pgTable("deck", {
   id: text("id").notNull().primaryKey(),
@@ -101,7 +125,7 @@ export const cards = pgTable("card", {
   id: text("id").notNull().primaryKey(),
   cardText: text("card_text").notNull(),
   type: cardTypeEnum("card_type").notNull(),
-  deckId: text("deck_id").notNull()
+  deckId: text("deck_id").notNull().references(() => decks.id, { onDelete: "cascade" })
 })
 
 export const cardDeckRelations = relations(decks, ({ many, one }) => ({
@@ -119,6 +143,10 @@ export const deckCardRelations = relations(cards, ({ many, one }) => ({
 export const insertCardSchema = createInsertSchema(cards);
 
 export const insertDeckSchema = createInsertSchema(decks);
+
+export const insertGameSchema = createInsertSchema(games, {
+  code: z.string().optional()
+});
 
 export type Deck = InferSelectModel<typeof decks>
 export type Card = InferSelectModel<typeof cards>

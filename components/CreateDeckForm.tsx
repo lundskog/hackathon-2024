@@ -91,6 +91,7 @@ export function CreateDeckForm() {
                 <FormLabel>Deck Name</FormLabel>
                 <FormControl>
                   <Input
+                    autoFocus
                     type="text"
                     className="w-full"
                     placeholder="Stocken X"

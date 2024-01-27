@@ -45,10 +45,10 @@ export const authOptions: NextAuthOptions = {
       if (token && token.sub) {
         session.user.id = token.sub;
       }
-      const x = await db.query.users.findFirst({
-        where: eq(users.id, session.user.id),
-      });
-      session.user.username = x?.username ?? undefined;
+      // const x = await db.query.users.findFirst({
+      //   where: eq(users.id, session.user.id),
+      // });
+      // session.user.username = x?.username ?? undefined;
       return session;
     },
   },
