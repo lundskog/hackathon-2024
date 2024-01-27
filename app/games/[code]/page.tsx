@@ -5,9 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 
-type Users = {
-  [nickname: string]: string;
+type User = {
+  nickname: string;
+  playerId: string;
+  socketUserId: string;
+  points: number;
+  connected: boolean;
 };
+
 
 import {
   AlertDialog,
@@ -24,12 +29,12 @@ import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
 import { GameWithUsers } from "@/db/schema";
 
-export default function GamePage() {
+export default function GamePage () {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-1);
 
   const [socket, setSocket] = useState<Socket>();
-  const [connectedUsers, setConnectedUsers] = useState<Users>();
+  const [connectedUsers, setConnectedUsers] = useState<User[]>();
   const [gameId, setGameId] = useState<string>("");
   const [player, setPlayer] = useState();
   const { data: session } = useSession();
@@ -63,7 +68,7 @@ export default function GamePage() {
           socket.emit("join_room", gameCode, creator.nickname);
         }
       }
-      socket.on("connected_users", (data: Users) => {
+      socket.on("connected_users", (data: User[]) => {
         setConnectedUsers((pre) => data);
         console.log(connectedUsers);
       });
@@ -124,8 +129,8 @@ export default function GamePage() {
           {/* {player && player.nickname} */}
 
           {connectedUsers &&
-            Object.keys(connectedUsers).map((name, key) => (
-              <div key={key}>{name}</div>
+            (connectedUsers).map((user: User, key) => (
+              <div key={key}>{user.nickname}</div>
             ))}
 
           <p></p>
