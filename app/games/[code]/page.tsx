@@ -30,7 +30,7 @@ import { GameWithUsers } from "@/db/schema";
 import ChatPage from "@/components/chat/page";
 import { Button } from "@/components/ui/button";
 
-export default function GamePage() {
+export default function GamePage () {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-1);
 
@@ -92,6 +92,21 @@ export default function GamePage() {
         setConnectedUsers((pre) => data);
         console.log(connectedUsers);
       });
+      socket.on("round_start", (hands: any) => {
+        console.log(hands)
+        const id = game?.users.filter(user => user.userId === session?.user.id)[0]
+        if (id) {
+          console.log("--------")
+          console.log(id.id)
+          console.log(hands[id.id])
+        }
+        else {
+          console.log(playerId && hands[playerId])
+        }
+      }
+
+        // console.log(hands[])
+      )
     }
   }, [socket, game]);
 

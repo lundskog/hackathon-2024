@@ -125,19 +125,27 @@ io.on("connection", (socket: Socket) => {
 
 
         const chunkSize = Math.floor(whiteCards.length / nPlayers);
+        console.log(whiteCards.length, nPlayers)
         console.log(chunkSize)
 
         const chunkedArray = chunkArray(whiteCards, chunkSize);
         console.log(chunkedArray);
 
+        console.log(games[roomId].users)
         let resCards: any = {}
         for (let i = 0; i < chunkedArray.length; i++) {
-            resCards[games[roomId].users[i].playerId] = chunkedArray[i]
+            if (i < nPlayers) {
+                resCards[games[roomId].users[i].playerId] = chunkedArray[i]
+            }
+            else {
+                console.log("rest:", chunkedArray[i])
+            }
         }
         console.log(resCards)
 
 
         io.to(roomId).emit("round_start", resCards);
+
         // { 
         //     playerId: whiteCardIds: string[]; 
         // }
