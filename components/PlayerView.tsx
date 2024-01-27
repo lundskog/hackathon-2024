@@ -26,7 +26,9 @@ export default function PlayerView() {
           {players.map((player) => (
             <div className='p-8 flex flex-col items-center' key={player.id}>
                 <p className='font-bold text-2xl' style={{color:player.color_hex}}>{player.name}</p>
-                <PlayerState state={player.state} color_hex={player.color_hex}/>
+                <div className='m-2'>
+                  <PlayerState state={player.state} color_hex={player.color_hex}/>
+                </div>
             </div>
           ))}
         </div>

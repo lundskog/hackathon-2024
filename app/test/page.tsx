@@ -1,12 +1,11 @@
-import Hand from '@/components/Hand'
+import Board from '@/components/Board'
 import PlayerView from '@/components/PlayerView'
 
 export default function Page() {
   return (
-      <div className='bg-white'>
+      <div className='bg-gray-400'>
           <PlayerView />
-          <div className='my-72'></div>
-          <Hand/>
+          <Board/>
     </div>
   )
 }
