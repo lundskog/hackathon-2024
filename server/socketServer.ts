@@ -2,6 +2,8 @@ import http, { Server as HTTPServer } from "http";
 import { Server as SocketIoServer, Socket } from "socket.io";
 import cors from "cors";
 
+let gameinfo = []
+
 const httpServer: HTTPServer = http.createServer();
 
 const io: SocketIoServer = new SocketIoServer(httpServer, {
@@ -17,6 +19,7 @@ io.on("connection", (socket: Socket) => {
     console.log("A user connected:", socket.id);
     socket.on("join_room", (roomId: string) => {
         socket.join(roomId);
+        gameinfo.push({ roomId })
         console.log(`user with id-${socket.id} joined room - ${roomId}`);
     });
 

@@ -1,7 +1,7 @@
 "use client";
 import styles from "./page.module.css";
-import { io } from "socket.io-client";
-import { useState } from "react";
+import { io, type Socket } from "socket.io-client";
+import { useEffect, useState } from "react";
 import ChatPage from "@/components/chat/page";
 
 export default function Home () {
@@ -10,24 +10,51 @@ export default function Home () {
     const [showSpinner, setShowSpinner] = useState(false);
     const [roomId, setroomId] = useState("");
 
-    var socket: any;
-    socket = io("http://localhost:3001");
+    // Declare socket as a state variable
+    const [socket, setSocket] = useState<Socket | null>(null);
 
-    const handleJoin = () => {
-        if (userName !== "" && roomId !== "") {
+    // Function to initialize socket connection
+    const initSocket = async () => {
+        if (!socket) {
+            const newSocket: any = io("http://localhost:3001");
+
+            // Create a promise that resolves when the 'connect' event is received
+            const connectPromise = new Promise<void>((resolve) => {
+                newSocket.on('connect', () => {
+                    console.log('Socket connected!');
+                    resolve();
+                });
+            });
+
+            setSocket(newSocket);
+
+            // Wait for the connection to be established before continuing
+            await connectPromise;
+            return newSocket;
+        }
+        return socket;
+    };
+    useEffect(() => {
+        handleJoin()
+    }, [])
+
+
+    const handleJoin = async () => {
+        const currentSocket = await initSocket();
+
+        if (currentSocket.connected && userName !== "" && roomId !== "") {
             console.log(userName, "userName", roomId, "roomId");
-            socket.emit("join_room", roomId);
+            currentSocket.emit("join_room", roomId);
             setShowSpinner(true);
             // You can remove this setTimeout and add your own logic
             setTimeout(() => {
                 setShowChat(true);
                 setShowSpinner(false);
-            }, 4000);
+            }, 2000);
         } else {
             alert("Please fill in Username and Room Id");
         }
     };
-
     return (
         <div>
             <div
@@ -57,7 +84,11 @@ export default function Home () {
                 </button>
             </div>
             <div style={{ display: !showChat ? "none" : "" }}>
-                <ChatPage socket={socket} roomId={roomId} username={userName} />
+                {socket ? (
+                    <ChatPage socket={socket} roomId={roomId} username={userName} />
+                ) : (
+                    <p>loading</p>
+                )}
             </div>
         </div>
     );
