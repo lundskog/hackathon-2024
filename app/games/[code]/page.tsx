@@ -2,7 +2,7 @@
 import { trpc } from "@/app/_trpc/client";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 
 type Users = {
@@ -36,6 +36,9 @@ export default function GamePage() {
   const router = useRouter();
   const [nickname, setNickname] = useState<string>("");
   const [game, setGame] = useState<GameWithUsers>();
+  const [dialogOpen, setDialogOpen] = useState<boolean>(true);
+
+  const nicknameInputRef = useRef<HTMLInputElement>(null);
 
   const createPlayerMutation = trpc.games.createPlayer.useMutation();
   const playerId = localStorage.getItem("playerId");
@@ -55,12 +58,12 @@ export default function GamePage() {
       const newSocket = io("http://localhost:3001");
       setSocket(newSocket);
     } else {
-      if (session) {
-        const creator = game?.users.filter(
-          (user) => user.userId === session.user.id
+      if (game) {
+        const creator = game.users.filter(
+          (user) => user.userId === session?.user.id
         )[0];
         if (creator) {
-          socket.emit("join_room", gameCode, creator.nickname);
+          socket.emit("join_room", gameCode, creator.nickname, creator.id);
         }
       }
       socket.on("connected_users", (data: Users) => {
@@ -68,7 +71,7 @@ export default function GamePage() {
         console.log(connectedUsers);
       });
     }
-  }, [socket, session]);
+  }, [socket, game]);
 
   if (!game) return;
 
@@ -78,28 +81,29 @@ export default function GamePage() {
       .mutateAsync({ gameId: game.id, nickname })
       .then((id) => {
         localStorage.setItem("playerId", id);
+        socket.emit("join_room", gameCode, nickname, id);
+        setDialogOpen(false);
       });
-    socket.emit("join_room", gameCode, nickname ?? nickname);
   };
 
   const NicknamePrompt = () => {
-    const [routerOpen, setRouterOpen] = useState<boolean>(true);
     return (
-      <AlertDialog open={routerOpen}>
+      <AlertDialog open={dialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Choose nickname</AlertDialogTitle>
-            <Input
-              onChange={(e) => setNickname(e.currentTarget.value)}
-              value={nickname}
-              placeholder={"Niels Houben"}
-            />
+            <Input ref={nicknameInputRef} placeholder={"Niels Houben"} />
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => router.push("/")}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleJoin(nickname)}>
+            <AlertDialogAction
+              onClick={() =>
+                nicknameInputRef.current &&
+                handleJoin(nicknameInputRef.current.value)
+              }
+            >
               Join
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -124,8 +128,8 @@ export default function GamePage() {
           {/* {player && player.nickname} */}
 
           {connectedUsers &&
-            Object.keys(connectedUsers).map((name, key) => (
-              <div key={key}>{name}</div>
+            connectedUsers.map((user, index) => (
+              <div key={index}>{user.nickname}</div>
             ))}
 
           <p></p>
