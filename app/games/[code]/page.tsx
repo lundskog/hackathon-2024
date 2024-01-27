@@ -13,7 +13,6 @@ type User = {
   connected: boolean;
 };
 
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
 import { GameWithUsers } from "@/db/schema";
 
-export default function GamePage () {
+export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-1);
 
@@ -79,7 +78,7 @@ export default function GamePage () {
         } else {
           const guestNickname = game.users.filter(
             (user) => user.id === playerId
-          )[0];
+          )[0].nickname;
           socket.emit("join_room", gameCode, guestNickname, playerId);
         }
       }
@@ -146,7 +145,7 @@ export default function GamePage () {
           {/* {player && player.nickname} */}
 
           {connectedUsers &&
-            (connectedUsers).map((user: User, key) => (
+            connectedUsers.map((user: User, key) => (
               <div key={key}>{user.nickname}</div>
             ))}
 
