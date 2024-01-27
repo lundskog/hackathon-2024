@@ -72,7 +72,9 @@ export default function GamePage() {
     } else {
       if (game) {
         const creator = game.users.filter(
-          (user) => user.userId === session?.user.id
+          (user) =>
+            user.userId === session?.user.id &&
+            game.creatorId === session.user.id
         )[0];
         if (creator) {
           socket.emit("join_room", gameCode, creator.nickname, creator.id);

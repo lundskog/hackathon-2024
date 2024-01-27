@@ -69,8 +69,19 @@ module.exports = {
           '0%': { transform: 'translate(0, -42rem) rotate(-720deg)'},
           '100%': { transform: ' translate(0, 0rem) rotate(0deg)'},
         },
+        fadeInUp: {
+          "0%": {
+            top: "10px",
+            opacity: "0",
+          },
+          "100%": {
+            top: "0px",
+            opacity: "1",
+          },
+        },
       },
       animation: {
+        "fadeIn-up": "fadeInUp 0.2s ease forwards",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "slide-in-rotate": "slide-in-rotate 1s ease-in"
