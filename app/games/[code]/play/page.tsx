@@ -18,10 +18,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
+import ChatPage from "@/components/chat/page";
 
 export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
-  const gameCode = pathnameList?.at(-1);
+  const gameCode = pathnameList?.at(-2);
 
   const [socket, setSocket] = useState<Socket>();
   const [gameId, setGameId] = useState<string>("");
@@ -87,14 +88,23 @@ export default function GamePage() {
       (user) => user.id === playerId || user.userId === session?.user.id
     )[0];
     return (
-      <div>
-        {player || game.creatorId === session?.user.id ? null : (
-          <NicknamePrompt />
-        )}
+      <div className="flex flex-col justify-between">
         <div>
-          <h1 className="font-semibold text-4xl">{game.name}</h1>
-          <p className="font-semibold text-muted-foreground">{game.phase}</p>
-          {player && player.nickname}
+          {player || game.creatorId === session?.user.id ? null : (
+            <NicknamePrompt />
+          )}
+          <div>
+            <h1 className="font-semibold text-4xl">{game.name}</h1>
+            <p className="font-semibold text-muted-foreground">{game.phase}</p>
+            {player && player.nickname}
+          </div>
+        </div>
+        <div>
+          <ChatPage
+            socket={socket}
+            username={player.nickname}
+            roomId={game.code}
+          />
         </div>
       </div>
     );
