@@ -11,6 +11,6 @@ export const exampleRouter = createTRPCRouter({
   example: publicProcedure
     .mutation(async ({ ctx }) => {
       console.log(ctx.session?.user.name)
+      return "testing"
     }),
-
 });

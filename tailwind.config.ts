@@ -6,7 +6,7 @@ module.exports = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	],
+  ],
   theme: {
     container: {
       center: true,
@@ -76,6 +76,6 @@ module.exports = {
         "slide-in-rotate": "slide-in-rotate 1s ease-in"
       },
     },
-  },
-  plugins: [require("tailwindcss-animate")],
+    plugins: [require("tailwindcss-animate")],
+  }
 }
