@@ -7,6 +7,7 @@
     - [ ] Insert deck (space separated, comma separated)
     - [ ] Se vilka som har spelat sina kort
     - [ ] (chat)
+    - [ ] Timer?
 
 - [ ] Konto
     - [ ] Spara deck
@@ -20,6 +21,7 @@
 
 - [ ] black card
     - [ ] svarsalternativ 
+    - [ ] Använda AI för att fixa dålig grammatik?
 
 
 - [ ] Animationer
