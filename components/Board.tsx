@@ -13,8 +13,10 @@ interface Card {
   text: string;
 }
 export default function Board() {
-    const [cards, setCards] = useState<Card[]>([]);
-      const [droppedCardId, setDroppedCardId] = useState<string | null>(null);
+  const [cards, setCards] = useState<Card[]>([]);
+    const [blackCards, setBlackCards] = useState<Card[]>([{ id: '1', text: 'Detta är ett svart kort där det kan stå _' }]);
+
+    const [droppedCardId, setDroppedCardId] = useState<string | null>(null);
     useEffect(() => {
         setCards([
         { id: '1', text: 'Detta är ett vitt kort, här står det något roligt förhoppningsvis' },
@@ -39,14 +41,24 @@ export default function Board() {
     // If the card is dragged away from the droppable area, set droppedCardId to null
     setDroppedCardId(null);
   }
-};
+  };
+  const addBlackCard = () => {
+    const newCard = { id: `${blackCards.length + 1}`, text: 'New Black Card' };
+    setBlackCards([newCard, ...blackCards]);
+  };
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className='w-screen flex flex-col items-center'>
+        <button onClick={addBlackCard}>Add Black Card</button>
         <Droppable id="droppable">
-          <div className='flex mt-5 px-10 space-x-3 mb-16'>
-            <BlackCard id='1' text='Detta är ett svart kort där det kan stå _' />
+          <div className='relative flex mt-5 px-10 space-x-16 mb-16'>
+            <div className='relative'>
+              {blackCards.map((card, index) => (
+                <BlackCard key={card.id} id={card.id} text={card.text} zIndex={blackCards.length - index}/>
+              ))}
+            <div className='w-[245px] h-[300px]'></div>
+            </div>
               {droppedCardId && (
                 <Draggable key={droppedCardId} id={droppedCardId}>
                   <Card id={droppedCardId} text={cards.find(card => card.id === droppedCardId)?.text || ''} />

@@ -6,7 +6,11 @@ export default function PlayerState({ state, color_hex }: { state: string, color
     case 'picking':
         return <div>pick</div>
     case 'card queen':
-        return <Crown size={48} color="#FFA800" />
+        return (
+            <div className='animate-bounce'>
+                <Crown size={48} color="#FFA800" />
+            </div>
+        )
     case 'picked':
         return <div>piked</div>
     default:
