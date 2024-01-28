@@ -16,7 +16,6 @@ type User = {
   state: string;
 };
 
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,7 +38,7 @@ import PlayerState from "@/components/PlayerState";
 import Board from "@/components/Board";
 import { Info } from "@/server/socketServer";
 
-export default function GamePage () {
+export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-1);
 
@@ -56,7 +55,7 @@ export default function GamePage () {
 
   const [whiteCards, setWhiteCards] = useState<WhiteCards>();
 
-  const [hand, setHand] = useState<Card[]>();
+  const [hand, setHand] = useState<{ text: string; id: string }[]>([]);
 
   const nicknameInputRef = useRef<HTMLInputElement>(null);
 
@@ -165,7 +164,10 @@ export default function GamePage () {
               console.log(hands[id.id]);
               const myHand: string[] = hands[id.id];
               const x = myHand.map((whiteCardId) => {
-                return whiteCards[whiteCardId];
+                return {
+                  text: whiteCards[whiteCardId].cardText,
+                  id: whiteCards[whiteCardId].id,
+                };
               });
 
               setHand(x);
@@ -173,7 +175,10 @@ export default function GamePage () {
               if (playerId) {
                 const myHand: string[] = hands[playerId];
                 const x = myHand.map((whiteCardId) => {
-                  return whiteCards[whiteCardId];
+                  return {
+                    text: whiteCards[whiteCardId].cardText,
+                    id: whiteCards[whiteCardId].id,
+                  };
                 });
 
                 setHand(x);
@@ -181,7 +186,6 @@ export default function GamePage () {
             }
           }
         }
-
         // console.log(hands[])
       );
     }
@@ -275,7 +279,6 @@ export default function GamePage () {
                 ))}
 
               <p></p>
-
             </div>
           </div>
           <div className="flex items-end">
@@ -298,7 +301,7 @@ export default function GamePage () {
             hand.map((card) => {
               return (
                 <div key={card.id} className="whitespace-nowrap">
-                  * {card.cardText}
+                  * {card.text}
                 </div>
               );
             })}
