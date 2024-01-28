@@ -31,7 +31,7 @@ import ChatPage from "@/components/chat/page";
 import { Button } from "@/components/ui/button";
 import DecksPage from "@/app/decks/page";
 
-export default function GamePage() {
+export default function GamePage () {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-1);
 
@@ -109,6 +109,10 @@ export default function GamePage() {
       socket.on("connected_users", (data: User[]) => {
         setConnectedUsers((pre) => data);
         console.log(connectedUsers);
+      });
+      socket.on("game_info_state", (data: any) => {
+        console.log(data)
+        // update for example hand
       });
       socket.on(
         "round_start",
