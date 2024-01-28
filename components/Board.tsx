@@ -30,7 +30,7 @@ export default function Board({ hand }: { hand: Card[] }) {
   useEffect(() => {}, []);
 
   const [droppedCards, setDroppedCards] = useState<string[]>([]);
-  const [maxCards, setMaxCards] = useState<number>(4);
+  const [maxCards, setMaxCards] = useState<number>(1);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { over, active } = event;
