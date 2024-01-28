@@ -40,6 +40,7 @@ const [maxCards, setMaxCards] = useState<number>(4);
 const handleDragEnd = (event: DragEndEvent) => {
   const { over, active } = event;
 
+  // Droppable logic
   if (over && over.id === 'droppable') {
     if (droppedCards.length < maxCards && !droppedCards.includes(String(active.id))) {
       setDroppedCards(prev => [...prev, String(active.id)]);
@@ -49,7 +50,9 @@ const handleDragEnd = (event: DragEndEvent) => {
   } else if (!over || over.id === 'droppable') {
     setDroppedCards(prev => prev.filter(id => id !== String(active.id)));
   }
-};
+  };
+  
+  // Adding black card
   const addBlackCard = () => {
     const newCard = { id: `${blackCards.length + 1}`, text: 'New Black Card' };
     setBlackCards([newCard, ...blackCards]);
@@ -77,7 +80,7 @@ const handleDragEnd = (event: DragEndEvent) => {
       </Droppable>
         {isCardQueen && readingTime &&
           <div className='w-screen flex justify-center'>
-            {currentShowCard < showCards.length &&
+            {currentShowCard < showCards.length && 
             <button onClick={() =>  setCurrentShowCard(currentShowCard+1)} className='text-white text-xl font-bold bg-black rounded-2xl px-8 py-2 '>Show card {currentShowCard+1}</button>
             }
           </div>

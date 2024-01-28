@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from './Board';
+import TypeText from './TypeText';
 
 export default function BlackCard({ id, text, zIndex, currentShowCard, showCards }: { id: string, text: string, zIndex: number, currentShowCard: number, showCards: Card[]}) {
   // Initialize rotation immediately with a function
@@ -11,6 +12,9 @@ export default function BlackCard({ id, text, zIndex, currentShowCard, showCards
   const [spin, setSpin] = useState(false);
   const [slide, setSlide] = useState(false);
   const [blackCardText, setBlackCardText] = useState(text);
+  const [whiteCardText, setWhiteCardText] = useState("");
+  const [trigger, setTrigger] = useState(false);
+
 
 
   // Use the `id` prop to trigger the animations for a new card
@@ -29,7 +33,7 @@ export default function BlackCard({ id, text, zIndex, currentShowCard, showCards
 
   useEffect(() => {
     if (currentShowCard !== 0) {
-      setBlackCardText(text+showCards[currentShowCard - 1].text);
+      setTrigger(true)
     }
   }, [currentShowCard]);
   
@@ -42,7 +46,7 @@ export default function BlackCard({ id, text, zIndex, currentShowCard, showCards
 
   return (
     <div style={style} className='w-[245px] flex items-start font-medium rounded px-3 absolute py-10 h-[300px] text-2xl bg-black shadow-lg'>
-      <p className='text-white text-left'>{blackCardText}</p>
+      <p className='text-white text-left'>{blackCardText} <TypeText trigger={trigger} setTrigger={setTrigger} typeText={showCards} /></p>
     </div>
   );
 }
