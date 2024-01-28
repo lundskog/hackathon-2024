@@ -16,9 +16,10 @@ type User = {
     connected: boolean;
     whiteCardIds: string[];
     playingWhiteCardId: string;
+    state: string;
 };
 
-type Info = {
+export type Info = {
     round: number;
     activeBlackCard: string;
     readerIndex: number;
@@ -55,14 +56,23 @@ io.on("connection", (socket: Socket) => {
         if (!games[roomId]) {
             console.log("--- Created room with id:", roomId);
             games[roomId] = {
-                users: [],
+                users: [{
+                    nickname,
+                    playerId,
+                    socketUserId: socket.id,
+                    points: 0,
+                    connected: true,
+                    whiteCardIds: [],
+                    playingWhiteCardId: "",
+                    state: "card queen",
+                }],
                 msgs: [],
                 info: {
                     round: 0,
                     activeBlackCard: "",
                     playedWhiteCards: [],
                     readerIndex: 0,
-                    hands: {},
+                    hands: [],
                 },
             };
         }
@@ -76,7 +86,8 @@ io.on("connection", (socket: Socket) => {
                 points: 0,
                 connected: true,
                 whiteCardIds: [],
-                playingWhiteCardId: ""
+                playingWhiteCardId: "",
+                state: "picking",
             })
         }
         else {

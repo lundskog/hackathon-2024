@@ -26,9 +26,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <NextAuthSessionProvider>
           <Providers>
-            <main className="flex min-h-screen">
+            <main className="flex min-h-screen overflow-hidden">
               {/* <div className="relative max-w-[1080px] w-full flex grow py-4"> */}
-              <div className="relative w-full flex grow p-4">{children}</div>
+              <div className="relative w-full flex grow p-4 pb-0 overflow-hidden">
+                {children}
+              </div>
               <ThemeSwitchButton />
               <Toaster />
             </main>
