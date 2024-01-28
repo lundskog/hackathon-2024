@@ -30,6 +30,7 @@ import { Card, GameWithUsers } from "@/db/schema";
 import ChatPage from "@/components/chat/page";
 import { Button } from "@/components/ui/button";
 import DecksPage from "@/app/decks/page";
+import Board from "@/components/Board";
 
 export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
@@ -48,7 +49,7 @@ export default function GamePage() {
 
   const [whiteCards, setWhiteCards] = useState<WhiteCards>();
 
-  const [hand, setHand] = useState<Card[]>();
+  const [hand, setHand] = useState<{ text: string; id: string }[]>();
 
   const nicknameInputRef = useRef<HTMLInputElement>(null);
 
@@ -124,7 +125,10 @@ export default function GamePage() {
               console.log(hands[id.id]);
               const myHand: string[] = hands[id.id];
               const x = myHand.map((whiteCardId) => {
-                return whiteCards[whiteCardId];
+                return {
+                  text: whiteCards[whiteCardId].cardText,
+                  id: whiteCards[whiteCardId].id,
+                };
               });
 
               setHand(x);
@@ -132,7 +136,10 @@ export default function GamePage() {
               if (playerId) {
                 const myHand: string[] = hands[playerId];
                 const x = myHand.map((whiteCardId) => {
-                  return whiteCards[whiteCardId];
+                  return {
+                    text: whiteCards[whiteCardId].cardText,
+                    id: whiteCards[whiteCardId].id,
+                  };
                 });
 
                 setHand(x);
@@ -202,8 +209,8 @@ export default function GamePage() {
       (user) => user.id === playerId || user.userId === session?.user.id
     )[0];
     return (
-      <div className="flex">
-        <div className="flex flex-col justify-between">
+      <div className="flex flex-col w-full overflow-hidden">
+        <div className="flex flex-col justify-between absolute">
           <div>
             {player || game.creatorId === session?.user.id ? null : (
               <NicknamePrompt />
@@ -220,8 +227,6 @@ export default function GamePage() {
                 connectedUsers.map((user: User, key) => (
                   <div key={key}>{user.nickname}</div>
                 ))}
-
-              <p></p>
             </div>
           </div>
           <div className="flex items-end">
@@ -239,15 +244,8 @@ export default function GamePage() {
             )}
           </div>
         </div>
-        <div className="">
-          {hand &&
-            hand.map((card) => {
-              return (
-                <div key={card.id} className="whitespace-nowrap">
-                  * {card.cardText}
-                </div>
-              );
-            })}
+        <div className="flex grow overflow-hidden">
+          {hand && <Board hand={hand} />}
         </div>
       </div>
     );

@@ -1,8 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Card } from './Board';
-import TypeText from './TypeText';
+import React, { useEffect, useState } from "react";
+import { Card } from "./Board";
+import TypeText from "./TypeText";
 
-export default function BlackCard({ id, text, zIndex, currentShowCard, showCards }: { id: string, text: string, zIndex: number, currentShowCard: number, showCards: Card[]}) {
+export default function BlackCard({
+  id,
+  text,
+  zIndex,
+  currentShowCard,
+  showCards,
+}: {
+  id: string;
+  text: string;
+  zIndex: number;
+  currentShowCard: number;
+  showCards: Card[];
+}) {
   // Initialize rotation immediately with a function
   const [rotation] = useState(() => {
     const min = -10; // Minimum degree
@@ -14,8 +26,6 @@ export default function BlackCard({ id, text, zIndex, currentShowCard, showCards
   const [blackCardText, setBlackCardText] = useState(text);
   const [whiteCardText, setWhiteCardText] = useState("");
   const [trigger, setTrigger] = useState(false);
-
-
 
   // Use the `id` prop to trigger the animations for a new card
   useEffect(() => {
@@ -30,23 +40,33 @@ export default function BlackCard({ id, text, zIndex, currentShowCard, showCards
     }, 10); // Small timeout to ensure the reset is rendered before the animation starts
   }, [id]); // Depend on `id` to trigger this effect
 
-
   useEffect(() => {
     if (currentShowCard !== 0) {
-      setTrigger(true)
+      setTrigger(true);
     }
   }, [currentShowCard]);
-  
 
   const style = {
-    transform: `translateY(${slide ? 0 : '-200%'}) rotate(${spin ? rotation + 360 : rotation}deg)`,
-    transition: 'transform 2s',
+    transform: `translateY(${slide ? 0 : "-200%"}) rotate(${
+      spin ? rotation + 360 : rotation
+    }deg)`,
+    transition: "transform 2s",
     zIndex: zIndex,
   };
 
   return (
-    <div style={style} className='w-[245px] flex items-start font-medium rounded px-3 absolute py-10 h-[300px] text-2xl bg-black shadow-lg'>
-      <p className='text-white text-left'>{blackCardText} <TypeText trigger={trigger} setTrigger={setTrigger} typeText={showCards} /></p>
+    <div
+      style={style}
+      className="w-[245px] flex items-start font-medium rounded px-3 absolute py-10 h-[300px] text-2xl bg-black shadow-lg"
+    >
+      <div className="text-white text-left">
+        {blackCardText}{" "}
+        <TypeText
+          trigger={trigger}
+          setTrigger={setTrigger}
+          typeText={showCards}
+        />
+      </div>
     </div>
   );
 }
