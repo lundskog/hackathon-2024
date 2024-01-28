@@ -37,6 +37,7 @@ const ChatPage = ({
 
   const sendData = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const minutes = new Date(Date.now()).getMinutes();
     if (currentMsg !== "") {
       const msgData = {
         roomId,
@@ -45,7 +46,7 @@ const ChatPage = ({
         time:
           new Date(Date.now()).getHours() +
           ":" +
-          new Date(Date.now()).getMinutes(),
+          (minutes < 10 ? "0" + minutes : minutes),
       };
       socket.emit("send_msg", msgData);
       scrollToChatBottom();

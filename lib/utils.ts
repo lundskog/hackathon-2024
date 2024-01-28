@@ -1,3 +1,4 @@
+import { PlayerWhiteCards } from "@/server/socketServer";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -70,4 +71,18 @@ export function chunkArray (array: string[], chunkSize: number) {
   }
 
   return result;
+}
+
+export function shufflePlayerData(playerData: PlayerWhiteCards): PlayerWhiteCards {
+    // Convert object keys (or key-value pairs) into an array
+    const entries = Object.entries(playerData);
+
+    // Shuffle the array using the Fisher-Yates (Durstenfeld) algorithm
+    for (let i = entries.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [entries[i], entries[j]] = [entries[j], entries[i]];
+    }
+
+    // Reconstruct the object from the shuffled array
+    return Object.fromEntries(entries) as PlayerWhiteCards;
 }

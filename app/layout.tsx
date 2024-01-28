@@ -28,7 +28,7 @@ export default function RootLayout({
           <Providers>
             <main className="flex min-h-screen overflow-hidden">
               {/* <div className="relative max-w-[1080px] w-full flex grow py-4"> */}
-              <div className="relative w-full flex grow p-4 pb-0 overflow-hidden">
+              <div className="relative w-full flex grow p-4 overflow-hidden">
                 {children}
               </div>
               <ThemeSwitchButton />

@@ -8,6 +8,8 @@ type ChatMessage = {
     time: string;
 };
 
+export type Hands = {[playerId: string]: string[]}
+
 type User = {
     nickname: string;
     playerId: string;
@@ -24,7 +26,8 @@ export type Info = {
     activeBlackCard: string;
     readerIndex: number;
     playedWhiteCards: string[];
-    hands: any;
+    currentPlayingWhiteCards: PlayerWhiteCards,
+    hands: Hands;
 }
 
 type Game = {
@@ -36,6 +39,14 @@ type Game = {
 // In-memory storage for chat msgs
 const games: { [roomId: string]: Game } = {};
 
+let playedBlackCards: string[] = [];
+
+let blackCards: string[] = [];
+
+let whiteCards: string[] = [];
+
+let restCards = [];
+
 const httpServer: HTTPServer = http.createServer();
 
 const io: SocketIoServer = new SocketIoServer(httpServer, {
@@ -46,6 +57,10 @@ const io: SocketIoServer = new SocketIoServer(httpServer, {
         credentials: true,
     },
 });
+
+export type PlayerWhiteCards = {
+    [playerId: string]: string;
+  }
 
 io.on("connection", (socket: Socket) => {
     console.log("A user connected:", socket.id);
@@ -64,15 +79,16 @@ io.on("connection", (socket: Socket) => {
                     connected: true,
                     whiteCardIds: [],
                     playingWhiteCardId: "",
-                    state: "card queen",
+                    state: "reader",
                 }],
                 msgs: [],
                 info: {
                     round: 0,
                     activeBlackCard: "",
                     playedWhiteCards: [],
+                    currentPlayingWhiteCards: {},
                     readerIndex: 0,
-                    hands: [],
+                    hands: {},
                 },
             };
         }
@@ -87,7 +103,7 @@ io.on("connection", (socket: Socket) => {
                 connected: true,
                 whiteCardIds: [],
                 playingWhiteCardId: "",
-                state: "picking",
+                state: "picker",
             })
         }
         else {
@@ -131,11 +147,63 @@ io.on("connection", (socket: Socket) => {
         }
     );
 
-    socket.on("start_game", (roomId: string, startingWhiteCards: string[]) => {
+  socket.on("winner_picked", (roomId: string, userId: string) => {
+    games[roomId].users.find(user => user.playerId === userId)!.points += 1
+
+    // New blackcard
+    const chosenBlackCard = blackCards[Math.floor(Math.random() * blackCards.length)]
+    games[roomId].info.activeBlackCard = chosenBlackCard;
+    blackCards = blackCards.filter(c => c !== chosenBlackCard)??playedBlackCards
+
+    games[roomId].info.currentPlayingWhiteCards = {}
+    const currentReaderIndex = games[roomId].info.readerIndex
+    currentReaderIndex < Object.keys(games[roomId].users).length-1?games[roomId].info.readerIndex += 1:games[roomId].info.readerIndex=0
+    games[roomId].info.round += 1
+    games[roomId].users = games[roomId].users.map((user, index) => {
+      user.playingWhiteCardId = ""
+      index===games[roomId].info.readerIndex?user.state = "reader":user.state = "picker"
+      return user
+    })
+
+    io.to(roomId).emit("game_info_state", games[roomId].info)
+    io.to(roomId).emit("connected_users", games[roomId].users);
+  })
+
+  socket.on("display_card", (roomId: string, cardId: string) => {
+    io.to(roomId).emit("show_card", cardId)
+  })
+
+  socket.on("leave", (roomId: string, playerId: string) => {
+    games[roomId].users = games[roomId].users.filter((user, index) => {
+      if (user.playerId !== playerId) {
+        return user        
+      }
+    })
+    io.to(roomId).emit("connected_users", games[roomId].users);
+  })
+
+  socket.on("submit_card", (roomId: string, playerId: string, usersPlayingWhiteCard: string) => {
+    games[roomId].users.find(user => user.playerId === playerId)!.playingWhiteCardId = usersPlayingWhiteCard;
+    const removeWhiteCardIndex = games[roomId].info.hands[playerId].indexOf(usersPlayingWhiteCard)
+    games[roomId].info.hands[playerId].splice(removeWhiteCardIndex, 1)
+    const randomWhiteCard = games[roomId].info.playedWhiteCards
+    const randomCardIndex = Math.floor(Math.random()*randomWhiteCard.length)
+    games[roomId].info.hands[playerId].push(randomWhiteCard[randomCardIndex])
+    games[roomId].info.playedWhiteCards.splice(randomCardIndex, 1)
+    games[roomId].info.playedWhiteCards.push(usersPlayingWhiteCard);
+    games[roomId].info.currentPlayingWhiteCards[playerId] = usersPlayingWhiteCard;
+    if (Object.keys(games[roomId].info.currentPlayingWhiteCards).length === games[roomId].users.length - 1) {
+      io.to(roomId).emit("game_info_state", games[roomId].info)
+    }
+    io.to(roomId).emit("connected_users", games[roomId].users);
+    })
+  
+    socket.on("start_game", (roomId: string, startingWhiteCards: string[], blackCardsAtStart: string[]) => {
         console.log("roomId:", roomId)
-        console.log("whiteCards:", startingWhiteCards)
+      console.log("whiteCards:", startingWhiteCards)
+      console.log("BLACK CARDS:", blackCardsAtStart);
         // shuffle deck
-        let whiteCards = shuffle(startingWhiteCards)
+        whiteCards = shuffle(startingWhiteCards)
 
         // let whiteCards = shuffle(["a", "b", "c", "d", "e", "f", "g", "h", "i"])
 
@@ -143,7 +211,8 @@ io.on("connection", (socket: Socket) => {
         let nPlayers = games[roomId].users.length
 
 
-        const chunkSize = Math.floor(whiteCards.length / nPlayers);
+      const chunkSize = 4;
+        // const chunkSize = Math.floor(whiteCards.length / nPlayers);
         console.log(whiteCards.length, nPlayers)
         console.log(chunkSize)
 
@@ -151,21 +220,30 @@ io.on("connection", (socket: Socket) => {
         console.log(chunkedArray);
 
         console.log(games[roomId].users)
-        let resCards: any = {}
+        let resCards: Hands = {}
         for (let i = 0; i < chunkedArray.length; i++) {
             if (i < nPlayers) {
                 resCards[games[roomId].users[i].playerId] = chunkedArray[i]
             }
             else {
-                console.log("rest:", chunkedArray[i])
+              console.log("rest:", chunkedArray[i])
                 games[roomId].info.playedWhiteCards.push(...chunkedArray[i])
             }
         }
         console.log(resCards)
         games[roomId].info.hands = resCards
-
-
-        io.to(roomId).emit("round_start", resCards);
+        
+      const chosenBlackCard = blackCardsAtStart[Math.floor(Math.random() * blackCardsAtStart.length)]
+      
+      playedBlackCards.push(chosenBlackCard);
+      
+      games[roomId].info.activeBlackCard = chosenBlackCard;
+        
+      blackCards = blackCardsAtStart.filter(c => c !== chosenBlackCard);
+      
+        const gameInfo = games[roomId].info
+      
+        io.to(roomId).emit("round_start", resCards, gameInfo);
 
         // { 
         //     playerId: whiteCardIds: string[]; 
