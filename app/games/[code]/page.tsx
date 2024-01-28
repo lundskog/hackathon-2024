@@ -29,6 +29,7 @@ import { v4 } from "uuid";
 import { Card, GameWithUsers } from "@/db/schema";
 import ChatPage from "@/components/chat/page";
 import { Button } from "@/components/ui/button";
+import DecksPage from "@/app/decks/page";
 
 export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
@@ -46,6 +47,8 @@ export default function GamePage() {
   };
 
   const [whiteCards, setWhiteCards] = useState<WhiteCards>();
+
+  const [hand, setHand] = useState<Card[]>();
 
   const nicknameInputRef = useRef<HTMLInputElement>(null);
 
@@ -109,17 +112,32 @@ export default function GamePage() {
       });
       socket.on(
         "round_start",
-        (hands: any) => {
+        (hands) => {
           console.log(hands);
           const id = game?.users.filter(
             (user) => user.userId === session?.user.id
           )[0];
-          if (id) {
-            console.log("--------");
-            console.log(id.id);
-            console.log(hands[id.id]);
-          } else {
-            console.log(playerId && hands[playerId]);
+          if (whiteCards) {
+            if (id) {
+              console.log("--------");
+              console.log(id.id);
+              console.log(hands[id.id]);
+              const myHand: string[] = hands[id.id];
+              const x = myHand.map((whiteCardId) => {
+                return whiteCards[whiteCardId];
+              });
+
+              setHand(x);
+            } else {
+              if (playerId) {
+                const myHand: string[] = hands[playerId];
+                const x = myHand.map((whiteCardId) => {
+                  return whiteCards[whiteCardId];
+                });
+
+                setHand(x);
+              }
+            }
           }
         }
 
@@ -184,38 +202,52 @@ export default function GamePage() {
       (user) => user.id === playerId || user.userId === session?.user.id
     )[0];
     return (
-      <div className="flex flex-col justify-between">
-        <div>
-          {player || game.creatorId === session?.user.id ? null : (
-            <NicknamePrompt />
-          )}
-          {JSON.stringify(player)}
+      <div className="flex">
+        <div className="flex flex-col justify-between">
           <div>
-            <h1 className="font-semibold text-4xl">{game.name}</h1>
-            <p className="font-semibold text-muted-foreground">{game.phase}</p>
-            {/* {player && player.nickname} */}
+            {player || game.creatorId === session?.user.id ? null : (
+              <NicknamePrompt />
+            )}
+            {JSON.stringify(player)}
+            <div>
+              <h1 className="font-semibold text-4xl">{game.name}</h1>
+              <p className="font-semibold text-muted-foreground">
+                {game.phase}
+              </p>
+              {/* {player && player.nickname} */}
 
-            {connectedUsers &&
-              connectedUsers.map((user: User, key) => (
-                <div key={key}>{user.nickname}</div>
-              ))}
+              {connectedUsers &&
+                connectedUsers.map((user: User, key) => (
+                  <div key={key}>{user.nickname}</div>
+                ))}
 
-            <p></p>
+              <p></p>
+            </div>
+          </div>
+          <div className="flex items-end">
+            {player && (
+              <ChatPage
+                socket={socket}
+                roomId={gameCode}
+                username={player.nickname}
+              />
+            )}
+            {game.creatorId === session?.user.id && (
+              <Button onClick={() => handleStartGame(socket)} className="m-4">
+                Start game
+              </Button>
+            )}
           </div>
         </div>
-        <div className="flex items-end">
-          {player && (
-            <ChatPage
-              socket={socket}
-              roomId={gameCode}
-              username={player.nickname}
-            />
-          )}
-          {game.creatorId === session?.user.id && (
-            <Button onClick={() => handleStartGame(socket)} className="m-4">
-              Start game
-            </Button>
-          )}
+        <div className="">
+          {hand &&
+            hand.map((card) => {
+              return (
+                <div key={card.id} className="whitespace-nowrap">
+                  * {card.cardText}
+                </div>
+              );
+            })}
         </div>
       </div>
     );
