@@ -77,13 +77,19 @@ const ChatPage = ({
           >
             <span className="text-xs text-muted-foreground">{time}</span>
             <span
-              className={`w-8 h-8 p-2 rounded-full flex justify-center items-center ${
+              className={`min-w-[32px] w-8 min-h-[32px] h-8 p-2 rounded-full flex justify-center items-center ${
                 user == username ? "bg-primary" : "bg-accent"
               }`}
             >
               {user.charAt(0)}
             </span>
-            <h3 className="font-medium">{msg}</h3>
+            <h3
+              className={`font-medium ${
+                user == username ? "text-right" : "text-left"
+              }`}
+            >
+              {msg}
+            </h3>
           </div>
         ))}
         <div ref={endOfChatRef} />

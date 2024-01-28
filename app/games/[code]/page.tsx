@@ -26,23 +26,26 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
-import { GameWithUsers } from "@/db/schema";
+import { Card, GameWithUsers } from "@/db/schema";
 import ChatPage from "@/components/chat/page";
 import { Button } from "@/components/ui/button";
 
-export default function GamePage () {
+export default function GamePage() {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-1);
 
   const [socket, setSocket] = useState<Socket>();
   const [connectedUsers, setConnectedUsers] = useState<User[]>();
-  const [gameId, setGameId] = useState<string>("");
-  const [player, setPlayer] = useState();
   const { data: session } = useSession();
   const router = useRouter();
-  const [nickname, setNickname] = useState<string>("");
   const [game, setGame] = useState<GameWithUsers>();
   const [dialogOpen, setDialogOpen] = useState<boolean>(true);
+
+  type WhiteCards = {
+    [whiteCardId: string]: Card;
+  };
+
+  const [whiteCards, setWhiteCards] = useState<WhiteCards>();
 
   const nicknameInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,6 +66,18 @@ export default function GamePage () {
   useEffect(() => {
     if (gameData) {
       setGame(gameData);
+      let gameDataWhiteCards: WhiteCards = {};
+      gameData.decks.forEach((deck) =>
+        deck.deck.cards
+          ?.filter((e) => e.type == "white")
+          .forEach((card) => {
+            gameDataWhiteCards[card.id] = {
+              ...card,
+            };
+          })
+      );
+      setWhiteCards(gameDataWhiteCards);
+      console.log(gameDataWhiteCards);
     }
   }, [gameData]);
 
@@ -92,21 +107,24 @@ export default function GamePage () {
         setConnectedUsers((pre) => data);
         console.log(connectedUsers);
       });
-      socket.on("round_start", (hands: any) => {
-        console.log(hands)
-        const id = game?.users.filter(user => user.userId === session?.user.id)[0]
-        if (id) {
-          console.log("--------")
-          console.log(id.id)
-          console.log(hands[id.id])
+      socket.on(
+        "round_start",
+        (hands: any) => {
+          console.log(hands);
+          const id = game?.users.filter(
+            (user) => user.userId === session?.user.id
+          )[0];
+          if (id) {
+            console.log("--------");
+            console.log(id.id);
+            console.log(hands[id.id]);
+          } else {
+            console.log(playerId && hands[playerId]);
+          }
         }
-        else {
-          console.log(playerId && hands[playerId])
-        }
-      }
 
         // console.log(hands[])
-      )
+      );
     }
   }, [socket, game]);
 
@@ -114,13 +132,11 @@ export default function GamePage () {
 
   const handleStartGame = (socket: Socket) => {
     var cardArray: string[] = [];
-    const l = [
-      game.decks.map((deck) =>
-        deck.deck.cards
-          ?.filter((e) => e.type == "white")
-          .map((card) => cardArray.push(card.id))
-      ),
-    ];
+    game.decks.map((deck) =>
+      deck.deck.cards
+        ?.filter((e) => e.type == "white")
+        .map((card) => cardArray.push(card.id))
+    );
     console.log(cardArray);
     socket.emit("start_game", gameCode, cardArray);
   };
