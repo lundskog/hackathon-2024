@@ -211,7 +211,7 @@ io.on("connection", (socket: Socket) => {
         let nPlayers = games[roomId].users.length
 
 
-      const chunkSize = 4;
+      const chunkSize = 8;
         // const chunkSize = Math.floor(whiteCards.length / nPlayers);
         console.log(whiteCards.length, nPlayers)
         console.log(chunkSize)
