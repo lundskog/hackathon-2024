@@ -296,15 +296,8 @@ export default function GamePage() {
             )}
           </div>
         </div>
-        <div className="">
-          {hand &&
-            hand.map((card) => {
-              return (
-                <div key={card.id} className="whitespace-nowrap">
-                  * {card.text}
-                </div>
-              );
-            })}
+        <div className="absolute w-full">
+          <Board hand={hand} />
         </div>
       </div>
     );
