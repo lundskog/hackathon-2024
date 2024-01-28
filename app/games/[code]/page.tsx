@@ -36,6 +36,8 @@ import { Button } from "@/components/ui/button";
 import DecksPage from "@/app/decks/page";
 import PlayerView from "@/components/PlayerView";
 import PlayerState from "@/components/PlayerState";
+import Board from "@/components/Board";
+import { Info } from "@/server/socketServer";
 
 export default function GamePage () {
   const pathnameList = usePathname()?.split("/");
@@ -116,9 +118,38 @@ export default function GamePage () {
         setConnectedUsers((pre) => data);
         console.log(connectedUsers);
       });
-      socket.on("game_info_state", (data: any) => {
-        console.log(data)
-        // update for example hand
+      socket.on("game_info_state", (info: Info) => {
+        const id = game?.users.filter(
+          (user) => user.userId === session?.user.id
+        )[0];
+        if (whiteCards) {
+          if (id) {
+            console.log("--------");
+            console.log(id.id);
+            console.log(info.hands[id.id]);
+            const myHand: string[] = info.hands[id.id];
+            const x = myHand.map((whiteCardId) => {
+              return {
+                text: whiteCards[whiteCardId].cardText,
+                id: whiteCards[whiteCardId].id,
+              };
+            });
+
+            setHand(x);
+          } else {
+            if (playerId) {
+              const myHand: string[] = info.hands[playerId];
+              const x = myHand.map((whiteCardId) => {
+                return {
+                  text: whiteCards[whiteCardId].cardText,
+                  id: whiteCards[whiteCardId].id,
+                };
+              });
+
+              setHand(x);
+            }
+          }
+        }
       });
       socket.on(
         "round_start",
@@ -213,14 +244,18 @@ export default function GamePage () {
     )[0];
     return (
       <div className="flex">
-        {connectedUsers && <PlayerView players={connectedUsers.map((user: User) => {
-          return {
-            id: user.playerId,
-            name: user.nickname,
-            color_hex: "#603FE7",
-            state: user.state
-          }
-        })} />}
+        {connectedUsers && (
+          <PlayerView
+            players={connectedUsers.map((user: User) => {
+              return {
+                id: user.playerId,
+                name: user.nickname,
+                color_hex: "#603FE7",
+                state: user.state,
+              };
+            })}
+          />
+        )}
         <div className="flex flex-col justify-between">
           <div>
             {player || game.creatorId === session?.user.id ? null : (

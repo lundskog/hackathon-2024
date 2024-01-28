@@ -19,7 +19,7 @@ type User = {
     state: string;
 };
 
-type Info = {
+export type Info = {
     round: number;
     activeBlackCard: string;
     readerIndex: number;
@@ -72,7 +72,7 @@ io.on("connection", (socket: Socket) => {
                     activeBlackCard: "",
                     playedWhiteCards: [],
                     readerIndex: 0,
-                    hands: {},
+                    hands: [],
                 },
             };
         }
