@@ -237,6 +237,19 @@ export default function GamePage() {
             if (myHand) {
               setGameStarted(true);
               const x = myHand.map((whiteCardId) => {
+                try {
+                  if (!whiteCards[whiteCardId].cardText) {
+                    console.log(
+                      "WAIDIAWHDIAWHIDA:,",
+                      whiteCards,
+                      whiteCards[whiteCardId]
+                    );
+                  }
+                } catch (e) {
+                  console.log(whiteCards);
+                  console.log(whiteCardId);
+                  console.log(myHand);
+                }
                 return {
                   text: whiteCards[whiteCardId].cardText,
                   id: whiteCards[whiteCardId].id,
