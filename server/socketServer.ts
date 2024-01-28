@@ -56,7 +56,16 @@ io.on("connection", (socket: Socket) => {
         if (!games[roomId]) {
             console.log("--- Created room with id:", roomId);
             games[roomId] = {
-                users: [],
+                users: [{
+                    nickname,
+                    playerId,
+                    socketUserId: socket.id,
+                    points: 0,
+                    connected: true,
+                    whiteCardIds: [],
+                    playingWhiteCardId: "",
+                    state: "card queen",
+                }],
                 msgs: [],
                 info: {
                     round: 0,
@@ -78,7 +87,7 @@ io.on("connection", (socket: Socket) => {
                 connected: true,
                 whiteCardIds: [],
                 playingWhiteCardId: "",
-                state: "picking"
+                state: "picking",
             })
         }
         else {

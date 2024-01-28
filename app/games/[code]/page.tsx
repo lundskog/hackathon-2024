@@ -16,6 +16,7 @@ type User = {
   state: string;
 };
 
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,9 +36,8 @@ import { Button } from "@/components/ui/button";
 import DecksPage from "@/app/decks/page";
 import PlayerView from "@/components/PlayerView";
 import PlayerState from "@/components/PlayerState";
-import Board from "@/components/Board";
 
-export default function GamePage() {
+export default function GamePage () {
   const pathnameList = usePathname()?.split("/");
   const gameCode = pathnameList?.at(-1);
 
@@ -54,7 +54,7 @@ export default function GamePage() {
 
   const [whiteCards, setWhiteCards] = useState<WhiteCards>();
 
-  const [hand, setHand] = useState<{ text: string; id: string }[]>();
+  const [hand, setHand] = useState<Card[]>();
 
   const nicknameInputRef = useRef<HTMLInputElement>(null);
 
@@ -117,7 +117,7 @@ export default function GamePage() {
         console.log(connectedUsers);
       });
       socket.on("game_info_state", (data: any) => {
-        console.log(data);
+        console.log(data)
         // update for example hand
       });
       socket.on(
@@ -134,10 +134,7 @@ export default function GamePage() {
               console.log(hands[id.id]);
               const myHand: string[] = hands[id.id];
               const x = myHand.map((whiteCardId) => {
-                return {
-                  text: whiteCards[whiteCardId].cardText,
-                  id: whiteCards[whiteCardId].id,
-                };
+                return whiteCards[whiteCardId];
               });
 
               setHand(x);
@@ -145,10 +142,7 @@ export default function GamePage() {
               if (playerId) {
                 const myHand: string[] = hands[playerId];
                 const x = myHand.map((whiteCardId) => {
-                  return {
-                    text: whiteCards[whiteCardId].cardText,
-                    id: whiteCards[whiteCardId].id,
-                  };
+                  return whiteCards[whiteCardId];
                 });
 
                 setHand(x);
@@ -219,23 +213,20 @@ export default function GamePage() {
     )[0];
     return (
       <div className="flex">
-        {connectedUsers && (
-          <PlayerView
-            players={connectedUsers.map((user: User) => {
-              return {
-                id: user.playerId,
-                name: user.nickname,
-                color_hex: "#603FE7",
-                state: user.state,
-              };
-            })}
-          />
-        )}
+        {connectedUsers && <PlayerView players={connectedUsers.map((user: User) => {
+          return {
+            id: user.playerId,
+            name: user.nickname,
+            color_hex: "#603FE7",
+            state: user.state
+          }
+        })} />}
         <div className="flex flex-col justify-between">
           <div>
             {player || game.creatorId === session?.user.id ? null : (
               <NicknamePrompt />
             )}
+            {/* {JSON.stringify(player)} */}
             <div>
               <h1 className="font-semibold text-4xl">{game.name}</h1>
               <p className="font-semibold text-muted-foreground">
@@ -247,6 +238,9 @@ export default function GamePage() {
                 connectedUsers.map((user: User, key) => (
                   <div key={key}>{user.nickname}</div>
                 ))}
+
+              <p></p>
+
             </div>
           </div>
           <div className="flex items-end">
@@ -264,8 +258,15 @@ export default function GamePage() {
             )}
           </div>
         </div>
-        <div className="flex grow overflow-hidden absolute w-full">
-          {hand && <Board hand={hand} />}
+        <div className="">
+          {hand &&
+            hand.map((card) => {
+              return (
+                <div key={card.id} className="whitespace-nowrap">
+                  * {card.cardText}
+                </div>
+              );
+            })}
         </div>
       </div>
     );
