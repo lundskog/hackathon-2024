@@ -11,6 +11,9 @@ type User = {
   socketUserId: string;
   points: number;
   connected: boolean;
+  whiteCardIds: string[];
+  playingWhiteCardId: string;
+  state: string;
 };
 
 import {
@@ -30,6 +33,8 @@ import { Card, GameWithUsers } from "@/db/schema";
 import ChatPage from "@/components/chat/page";
 import { Button } from "@/components/ui/button";
 import DecksPage from "@/app/decks/page";
+import PlayerView from "@/components/PlayerView";
+import PlayerState from "@/components/PlayerState";
 
 export default function GamePage () {
   const pathnameList = usePathname()?.split("/");
@@ -207,6 +212,14 @@ export default function GamePage () {
     )[0];
     return (
       <div className="flex">
+        {connectedUsers && <PlayerView players={connectedUsers.map((user: User) => {
+          return {
+            id: user.playerId,
+            name: user.nickname,
+            color_hex: "#603FE7",
+            state: user.state
+          }
+        })} />}
         <div className="flex flex-col justify-between">
           <div>
             {player || game.creatorId === session?.user.id ? null : (

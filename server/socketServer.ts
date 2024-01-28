@@ -16,6 +16,7 @@ type User = {
     connected: boolean;
     whiteCardIds: string[];
     playingWhiteCardId: string;
+    state: string;
 };
 
 type Info = {
@@ -76,7 +77,8 @@ io.on("connection", (socket: Socket) => {
                 points: 0,
                 connected: true,
                 whiteCardIds: [],
-                playingWhiteCardId: ""
+                playingWhiteCardId: "",
+                state: "picking"
             })
         }
         else {
