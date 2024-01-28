@@ -296,9 +296,6 @@ export default function GamePage() {
             )}
           </div>
         </div>
-        <div className="absolute w-full">
-          <Board hand={hand} />
-        </div>
       </div>
     );
   }
