@@ -58,7 +58,7 @@ export default function Board({ hand }: { hand: Card[] }) {
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="flex grow flex-col items-center overflow-y-hidden">
+      <div className="flex grow flex-col items-center overflow-y-hidden left-0">
         <button onClick={addBlackCard}>Add Black Card</button>
         <button
           onClick={() => setReadingTime(!readingTime)}

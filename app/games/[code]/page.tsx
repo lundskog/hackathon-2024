@@ -11,6 +11,9 @@ type User = {
   socketUserId: string;
   points: number;
   connected: boolean;
+  whiteCardIds: string[];
+  playingWhiteCardId: string;
+  state: string;
 };
 
 import {
@@ -30,6 +33,8 @@ import { Card, GameWithUsers } from "@/db/schema";
 import ChatPage from "@/components/chat/page";
 import { Button } from "@/components/ui/button";
 import DecksPage from "@/app/decks/page";
+import PlayerView from "@/components/PlayerView";
+import PlayerState from "@/components/PlayerState";
 import Board from "@/components/Board";
 
 export default function GamePage() {
@@ -110,6 +115,10 @@ export default function GamePage() {
       socket.on("connected_users", (data: User[]) => {
         setConnectedUsers((pre) => data);
         console.log(connectedUsers);
+      });
+      socket.on("game_info_state", (data: any) => {
+        console.log(data);
+        // update for example hand
       });
       socket.on(
         "round_start",
@@ -209,13 +218,24 @@ export default function GamePage() {
       (user) => user.id === playerId || user.userId === session?.user.id
     )[0];
     return (
-      <div className="flex flex-col w-full overflow-hidden">
-        <div className="flex flex-col justify-between absolute">
+      <div className="flex">
+        {connectedUsers && (
+          <PlayerView
+            players={connectedUsers.map((user: User) => {
+              return {
+                id: user.playerId,
+                name: user.nickname,
+                color_hex: "#603FE7",
+                state: user.state,
+              };
+            })}
+          />
+        )}
+        <div className="flex flex-col justify-between">
           <div>
             {player || game.creatorId === session?.user.id ? null : (
               <NicknamePrompt />
             )}
-            {JSON.stringify(player)}
             <div>
               <h1 className="font-semibold text-4xl">{game.name}</h1>
               <p className="font-semibold text-muted-foreground">
@@ -244,7 +264,7 @@ export default function GamePage() {
             )}
           </div>
         </div>
-        <div className="flex grow overflow-hidden">
+        <div className="flex grow overflow-hidden absolute w-full">
           {hand && <Board hand={hand} />}
         </div>
       </div>

@@ -16,6 +16,7 @@ type User = {
     connected: boolean;
     whiteCardIds: string[];
     playingWhiteCardId: string;
+    state: string;
 };
 
 type Info = {
@@ -23,6 +24,7 @@ type Info = {
     activeBlackCard: string;
     readerIndex: number;
     playedWhiteCards: string[];
+    hands: any;
 }
 
 type Game = {
@@ -50,6 +52,7 @@ io.on("connection", (socket: Socket) => {
     socket.on("join_room", (roomId: string, nickname: string, playerId: string) => {
         socket.join(roomId);
         console.log(`user with id-${socket.id} joined room - ${roomId}`);
+        // if no game with roomId exists, create it
         if (!games[roomId]) {
             console.log("--- Created room with id:", roomId);
             games[roomId] = {
@@ -59,11 +62,13 @@ io.on("connection", (socket: Socket) => {
                     round: 0,
                     activeBlackCard: "",
                     playedWhiteCards: [],
-                    readerIndex: 0
+                    readerIndex: 0,
+                    hands: {},
                 },
             };
         }
 
+        // if no user with playerId exists in game, add it
         if (games[roomId].users.filter(x => x.playerId == playerId).length == 0) {
             games[roomId].users.push({
                 nickname,
@@ -72,10 +77,12 @@ io.on("connection", (socket: Socket) => {
                 points: 0,
                 connected: true,
                 whiteCardIds: [],
-                playingWhiteCardId: ""
+                playingWhiteCardId: "",
+                state: "picking"
             })
         }
         else {
+            // user re-connected, replace it's socket.id
             let userObject: User = games[roomId].users.filter(x => x.playerId == playerId)[0]
             userObject.socketUserId = socket.id
         }
@@ -84,6 +91,9 @@ io.on("connection", (socket: Socket) => {
         if (games[roomId]) {
             const msgs = games[roomId].msgs;
             socket.emit("chat_history", msgs);
+
+            const info = games[roomId].info;
+            socket.emit("game_info_state", info);
 
             console.log("--- Sent out chat history:");
             console.log(msgs);
@@ -139,9 +149,11 @@ io.on("connection", (socket: Socket) => {
             }
             else {
                 console.log("rest:", chunkedArray[i])
+                games[roomId].info.playedWhiteCards.push(...chunkedArray[i])
             }
         }
         console.log(resCards)
+        games[roomId].info.hands = resCards
 
 
         io.to(roomId).emit("round_start", resCards);
